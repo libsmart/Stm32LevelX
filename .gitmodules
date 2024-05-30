@@ -4,3 +4,9 @@
 [submodule "examples/stm32f4_uno/Lib/Stm32ItmLogger"]
 	path = examples/stm32f4_uno/Lib/Stm32ItmLogger
 	url = https://github.com/libsmart/Stm32ItmLogger.git
+[submodule "examples/stm32f4_uno/Lib/Stm32Spi"]
+	path = examples/stm32f4_uno/Lib/Stm32Spi
+	url = https://github.com/libsmart/Stm32Spi.git
+[submodule "examples/stm32f4_uno/Lib/Stm32Gpio"]
+	path = examples/stm32f4_uno/Lib/Stm32Gpio
+	url = https://github.com/libsmart/Stm32Gpio.git

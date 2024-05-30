@@ -12,4 +12,3 @@
 #include "usart.h"
 
 uint32_t dummyCpp;
-Stm32ItmLogger::Stm32ItmLogger &Logger = Stm32ItmLogger::logger;

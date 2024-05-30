@@ -22,6 +22,96 @@
 void setup() {
     dummyCpp = 0;
     dummyCandCpp = 0;
+
+
+    pinSpi1Nss.setup();
+
+
+    Logger.printf("spi.getState() = 0x%08x\r\n", spi.getState());
+    Logger.printf("spi.getError() = 0x%08x\r\n", spi.getError());
+
+
+    uint8_t spi_buf[8];
+
+    spi.select();
+    spi.transmit((uint8_t) 0x9f); // RDID
+
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 3);
+    spi.unselect();
+
+    Logger.printf("SST26 JEDEC ID: 0x%02x 0x%02x 0x%02x\r\n",
+                  (uint8_t) spi_buf[0], (uint8_t) spi_buf[1], (uint8_t) spi_buf[2]);
+    if ((spi_buf[0] != 0xbf) || (spi_buf[1] != 0x26) || (spi_buf[2] != 0x41)) {
+        Logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
+                ->println("ERROR: NO SST26 chip detected!");
+    }
+
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit((uint32_t) 0xff600200);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    Logger.printf("SFDP 0x260: 0x%02x\r\n", spi_buf[0]);
+    spi.unselect();
+
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit("\x00\x02\x61\xff", 4);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    Logger.printf("SFDP 0x261: 0x%02x\r\n", spi_buf[0]);
+    spi.unselect();
+
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit_be((uint32_t) 0x262 << 8 | 0xff);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    Logger.printf("SFDP 0x262: 0x%02x\r\n", spi_buf[0]);
+    spi.unselect();
+
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    uint32_t addr = 0x263;
+    uint8_t tmp;
+    tmp=((addr & 0xFFFFFF) >> 16);
+    spi.transmit(tmp);
+    tmp=(((addr & 0xFFFF) >> 8));
+    spi.transmit(tmp);
+    tmp=(addr & 0xFF);
+    spi.transmit(tmp);
+    tmp=0xFF;
+    spi.transmit(tmp);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    Logger.printf("SFDP 0x263: 0x%02x\r\n", spi_buf[0]);
+    spi.unselect();
+
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit_be((uint32_t) 0x264 << 8 | 0xff);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    Logger.printf("SFDP 0x264: 0x%02x\r\n", spi_buf[0]);
+    spi.unselect();
+
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit_be((uint32_t) 0x265 << 8 | 0xff);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    Logger.printf("SFDP 0x265: 0x%02x\r\n", spi_buf[0]);
+    spi.unselect();
+
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit_be((uint32_t) 0x266 << 8 | 0xff);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    Logger.printf("SFDP 0x266: 0x%02x\r\n", spi_buf[0]);
+    spi.unselect();
+
 }
 
 
@@ -31,7 +121,6 @@ void setup() {
  * @see mainLoopThread() in AZURE_RTOS/App/app_azure_rtos.c
  */
 void loop() {
-
     static Stm32Common::RunEvery re2(300);
     re2.loop([]() {
         HAL_GPIO_WritePin(LED1_GRN_GPIO_Port, LED1_GRN_Pin, dummyCpp & 1 ? GPIO_PIN_RESET : GPIO_PIN_SET);
@@ -42,7 +131,6 @@ void loop() {
         dummyCpp++;
         dummyCandCpp++;
     });
-
 }
 
 
@@ -52,6 +140,6 @@ void loop() {
  */
 void errorHandler() {
     while (true) {
-//        for (uint32_t i = (SystemCoreClock / 10); i > 0; i--) { UNUSED(i); }
+        //        for (uint32_t i = (SystemCoreClock / 10); i > 0; i--) { UNUSED(i); }
     }
 }
