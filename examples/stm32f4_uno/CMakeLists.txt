@@ -49,11 +49,11 @@ else ()
     add_compile_options(-Og -g)
 endif ()
 
-include_directories(Core/Inc AZURE_RTOS/App Drivers/STM32F4xx_HAL_Driver/Inc Drivers/STM32F4xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F4xx/Include Drivers/CMSIS/Include Middlewares/ST/threadx/common/inc/ Middlewares/ST/threadx/ports/cortex_m4/gnu/inc/ Application Lib/Stm32Common/src Lib/Stm32ItmLogger/src )
+include_directories(Core/Inc AZURE_RTOS/App Drivers/STM32F4xx_HAL_Driver/Inc Drivers/STM32F4xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F4xx/Include Drivers/CMSIS/Include Middlewares/ST/threadx/common/inc/ Middlewares/ST/threadx/ports/cortex_m4/gnu/inc/ LevelX/App Middlewares/ST/levelx/common/inc/ Application ../../src Lib/Stm32Common/src Lib/Stm32ItmLogger/src )
 
-add_definitions(-DDEBUG -DTX_INCLUDE_USER_DEFINE_FILE -DUSE_HAL_DRIVER -DSTM32F407xx)
+add_definitions(-DDEBUG -DTX_INCLUDE_USER_DEFINE_FILE -DUSE_HAL_DRIVER -DSTM32F407xx -DLX_INCLUDE_USER_DEFINE_FILE)
 
-file(GLOB_RECURSE SOURCES "AZURE_RTOS/*.*" "ThreadX/*.*" "Core/*.*" "Middlewares/*.*" "Drivers/*.*" "Application/*.*" "Lib/Stm32Common/src/*.*" "Lib/Stm32ItmLogger/src/*.*")
+file(GLOB_RECURSE SOURCES "AZURE_RTOS/*.*" "ThreadX/*.*" "Core/*.*" "Middlewares/*.*" "Drivers/*.*" "Application/*.*" "../../src/*.*" "Lib/Stm32Common/src/*.*" "Lib/Stm32ItmLogger/src/*.*")
 
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F407VGTX_FLASH.ld)
 
