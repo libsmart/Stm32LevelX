@@ -14,6 +14,8 @@
 #include "globals.h"
 #include "Stm32ItmLogger.hpp"
 #include <cstdint>
+#include <Stm32LevelX.hpp>
+#include <Driver/Sst26Driver.hpp>
 
 #include "Stm32Spi.hpp"
 
@@ -31,6 +33,8 @@ inline Stm32ItmLogger::Stm32ItmLogger &Logger = Stm32ItmLogger::logger;
 inline Stm32Gpio::PinDigitalOut pinSpi1Nss(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, true);
 
 inline Stm32Spi::Spi spi(&hspi1, &pinSpi1Nss, &Stm32ItmLogger::logger);
+
+inline Stm32LevelX::Driver::Sst26Driver sst26(&spi);
 
 #ifdef __cplusplus
 }

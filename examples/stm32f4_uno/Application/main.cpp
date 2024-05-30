@@ -33,12 +33,16 @@ void setup() {
 
     uint8_t spi_buf[8];
 
+
+    sst26.RDID(spi_buf, sizeof(spi_buf));
+
+    /*
     spi.select();
     spi.transmit((uint8_t) 0x9f); // RDID
-
     memset(spi_buf, 0, sizeof(spi_buf));
     spi.receive(spi_buf, 3);
     spi.unselect();
+    */
 
     Logger.printf("SST26 JEDEC ID: 0x%02x 0x%02x 0x%02x\r\n",
                   (uint8_t) spi_buf[0], (uint8_t) spi_buf[1], (uint8_t) spi_buf[2]);
@@ -47,41 +51,56 @@ void setup() {
                 ->println("ERROR: NO SST26 chip detected!");
     }
 
+
+    /*
     spi.select();
     spi.transmit((uint8_t) 0x5a); // SFDP
     spi.transmit((uint32_t) 0xff600200);
     memset(spi_buf, 0, sizeof(spi_buf));
     spi.receive(spi_buf, 1);
-    Logger.printf("SFDP 0x260: 0x%02x\r\n", spi_buf[0]);
     spi.unselect();
+    Logger.printf("SFDP 0x260: 0x%02x\r\n", spi_buf[0]);
+    */
 
+    Logger.printf("SFDP 0x260: 0x%02x\r\n", sst26.SFDP(0x260));
+
+
+    /*
     spi.select();
     spi.transmit((uint8_t) 0x5a); // SFDP
     spi.transmit("\x00\x02\x61\xff", 4);
     memset(spi_buf, 0, sizeof(spi_buf));
     spi.receive(spi_buf, 1);
-    Logger.printf("SFDP 0x261: 0x%02x\r\n", spi_buf[0]);
     spi.unselect();
+    Logger.printf("SFDP 0x261: 0x%02x\r\n", spi_buf[0]);
+    */
 
+    Logger.printf("SFDP 0x261: 0x%02x\r\n", sst26.SFDP(0x261));
+
+
+    /*
     spi.select();
     spi.transmit((uint8_t) 0x5a); // SFDP
     spi.transmit_be((uint32_t) 0x262 << 8 | 0xff);
     memset(spi_buf, 0, sizeof(spi_buf));
     spi.receive(spi_buf, 1);
-    Logger.printf("SFDP 0x262: 0x%02x\r\n", spi_buf[0]);
     spi.unselect();
+    Logger.printf("SFDP 0x262: 0x%02x\r\n", spi_buf[0]);
+    */
+
+    Logger.printf("SFDP 0x262: 0x%02x\r\n", sst26.SFDP(0x262));
 
     spi.select();
     spi.transmit((uint8_t) 0x5a); // SFDP
     uint32_t addr = 0x263;
     uint8_t tmp;
-    tmp=((addr & 0xFFFFFF) >> 16);
+    tmp = ((addr & 0xFFFFFF) >> 16);
     spi.transmit(tmp);
-    tmp=(((addr & 0xFFFF) >> 8));
+    tmp = (((addr & 0xFFFF) >> 8));
     spi.transmit(tmp);
-    tmp=(addr & 0xFF);
+    tmp = (addr & 0xFF);
     spi.transmit(tmp);
-    tmp=0xFF;
+    tmp = 0xFF;
     spi.transmit(tmp);
     memset(spi_buf, 0, sizeof(spi_buf));
     spi.receive(spi_buf, 1);
@@ -111,6 +130,20 @@ void setup() {
     spi.receive(spi_buf, 1);
     Logger.printf("SFDP 0x266: 0x%02x\r\n", spi_buf[0]);
     spi.unselect();
+
+
+    memset(spi_buf, 0, sizeof(spi_buf));
+    sst26.RSID(0, spi_buf, sizeof(spi_buf));
+    Logger.printf("RSID: 0x%02x%02x%02x%02x%02x%02x%02x%02x\r\n",
+                  spi_buf[0], spi_buf[1], spi_buf[2], spi_buf[3],
+                  spi_buf[4], spi_buf[5], spi_buf[6], spi_buf[7]
+    );
+
+    sst26.getEUI48(spi_buf, sizeof(spi_buf));
+    Logger.printf("MAC: %02x:%02x:%02x:%02x:%02x:%02x\r\n",
+              spi_buf[0], spi_buf[1], spi_buf[2], spi_buf[3],
+              spi_buf[4], spi_buf[5]
+);
 
 }
 
