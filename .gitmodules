@@ -1,0 +1,6 @@
+[submodule "examples/stm32f4_uno/Lib/Stm32Common"]
+	path = examples/stm32f4_uno/Lib/Stm32Common
+	url = https://github.com/libsmart/Stm32Common.git
+[submodule "examples/stm32f4_uno/Lib/Stm32ItmLogger"]
+	path = examples/stm32f4_uno/Lib/Stm32ItmLogger
+	url = https://github.com/libsmart/Stm32ItmLogger.git
