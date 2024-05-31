@@ -155,7 +155,7 @@ void setup() {
 
     sst26.WREN(); sst26.ULBPR(); sst26.WRDI();
 
-    uint32_t addr = 0x600;
+    uint32_t addr = 0x00;
     ULONG sector[LX_NOR_SECTOR_SIZE] = {};
     char *str = (char *) sector;
 
@@ -175,7 +175,16 @@ void setup() {
         str[i] = (uint8_t) i;
     }
     snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
-    sst26.writeSector(addr, (uint8_t *) sector, 300);
+    // sst26.write(addr, (uint8_t *) sector, 300);
+
+    const uint32_t addr1 = 0x0000;
+    auto ret = sst26.verifySectorErased(addr1);
+    Logger.printf("sst26.verifySectorErased(0x%08x) = 0x%02x\r\n", addr1, ret);
+
+
+    // ret = sst26.eraseSector(addr1, 0);
+    // Logger.printf("sst26.eraseSector(0x%08x) = 0x%02x\r\n", addr1, ret);
+    // sst26.waitForWriteFinish();
 
 
     memset(sector, 82, sizeof(sector));

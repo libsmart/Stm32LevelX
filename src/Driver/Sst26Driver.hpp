@@ -31,6 +31,7 @@ namespace Stm32LevelX::Driver {
 
 
         static constexpr uint32_t PAGE_SIZE = 256;
+        static constexpr uint32_t SECTOR_SIZE = 4096;
 
         class JEDECID {
         public:
@@ -311,7 +312,7 @@ namespace Stm32LevelX::Driver {
         /**
          * @brief Read data from a specific address.
          *
-         * This method is used to read data from a specific address. It selects the SPI, clears the data buffer,
+         * This method is used to read data from a specific address. It selects the SPI,
          * transmits the read instruction and address, and receives the data if the transmission is successful. It
          * finally unselects the SPI and returns the status of the operation.
          *
@@ -326,7 +327,7 @@ namespace Stm32LevelX::Driver {
                     ->printf("Stm32LevelX::Driver::Sst26Driver::READ(0x%08x, %p, %lu)\r\n",
                              addr, &pData, size);
             spi->select();
-            memset(pData, 0, size);
+            // memset(pData, 0, size);
             auto ret = spi->transmit_be((Instruction::READ << 24) | (addr & 0x00FFFFFF));
             ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
             spi->unselect();
@@ -338,10 +339,9 @@ namespace Stm32LevelX::Driver {
          * @brief Read data from a specific address using High Speed SPI interface.
          *
          * This function reads data from a specific address using the High Speed SPI
-         * interface. It first selects the SPI interface, fills the data buffer with
-         * zeros, transmits the READ_HS instruction, transmits the address shifted
-         * left 8 bits ORed with 0xFF, receives the data, and finally unselects the
-         * SPI interface.
+         * interface. It first selects the SPI interface, transmits the READ_HS
+         * instruction, transmits the address shifted left 8 bits ORed with 0xFF,
+         * receives the data, and finally unselects the SPI interface.
          *
          * @param addr The address to read from.
          * @param pData A pointer to the buffer where the read data will be stored.
@@ -356,7 +356,7 @@ namespace Stm32LevelX::Driver {
                     ->printf("Stm32LevelX::Driver::Sst26Driver::READ_HS(0x%08x, %p, %lu)\r\n",
                              addr, &pData, size);
             spi->select();
-            memset(pData, 0, size);
+            // memset(pData, 0, size);
             auto ret = spi->transmit(Instruction::READ_HS);
             ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr << 8 | 0xFF);
             ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
@@ -416,6 +416,32 @@ namespace Stm32LevelX::Driver {
             return !isWEL() ? HalStatus::HAL_OK : HalStatus::HAL_ERROR;
         }
 
+
+        /**
+         * @brief Erase a sector of the flash memory.
+         *
+         * This method erases a sector of the flash memory at the specified address.
+         * The address must be aligned with the block size.
+         *
+         * @param addr The address of the sector to be erased.
+         *
+         * @return The status of the operation, indicating if the erase was successful.
+         *         Possible values are:
+         *         - HalStatus::HAL_OK: The erase operation was successful.
+         *         - HalStatus::HAL_ERROR: The erase operation failed.
+         *
+         * @see https://www.microchip.com/en-us/product/sst26vf016beui
+         */
+        HalStatus SE(const uint32_t addr) {
+            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
+                    ->printf("Stm32LevelX::Driver::Sst26Driver::SE(0x%08x)\r\n",
+                             addr);
+            if (addr % SECTOR_SIZE > 0) return HalStatus::HAL_ERROR;
+            spi->select();
+            const auto ret = spi->transmit_be((Instruction::SE << 24) | (addr & 0x00FFFFFF));
+            spi->unselect();
+            return ret;
+        }
 
         /**
          * @brief Program a page (256 bytes) of data to the specified address.
@@ -626,6 +652,14 @@ namespace Stm32LevelX::Driver {
         }
 
 
+        /**
+         * @brief Checks if the communication with the SST26 flash device is OK.
+         *
+         * This method reads the JEDEC ID of the flash device.
+         * It then compares the read JEDEC ID with the expected JEDEC ID to determine if the communication is OK.
+         *
+         * @return True if the communication with the flash device is OK, false otherwise.
+         */
         bool isComOk() {
             log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
                     ->printf("Stm32LevelX::Driver::Sst26Driver::isComOk()\r\n");
@@ -636,6 +670,19 @@ namespace Stm32LevelX::Driver {
                    && (jedecId[2] == JEDECID::BYTE_2);
         }
 
+
+        /**
+         * @brief Waits for communication to be ok.
+         *
+         * This function waits for the communication to be ok. It checks the communication status repeatedly
+         * until it becomes ok or the timeout period elapses.
+         *
+         * @param timeout_ms The timeout period in milliseconds. If set to 0, the function will wait indefinitely.
+         *
+         * @return The status of the operation.
+         *         - HalStatus::HAL_OK if the communication becomes ok within the timeout period.
+         *         - HalStatus::HAL_TIMEOUT if the communication does not become ok within the timeout period.
+         */
         HalStatus waitForComOk(const uint32_t timeout_ms) {
             const uint32_t start_ms = millis();
             while (!isComOk()) {
@@ -645,9 +692,19 @@ namespace Stm32LevelX::Driver {
             return HalStatus::HAL_OK;
         }
 
+
+        /**
+         * @brief Waits for the communication acknowledgement.
+         *
+         * This method waits for the communication acknowledgement.
+         * It internally calls the overloaded waitForComOk with a default timeout value of 0.
+         *
+         * @return The status of the communication acknowledgement.
+         */
         HalStatus waitForComOk() {
             return waitForComOk(0);
         }
+
 
         /**
          * @brief Retrieves the EUI-48 (Extended Unique Identifier) from the device.
@@ -693,11 +750,42 @@ namespace Stm32LevelX::Driver {
         }
 
     public:
-        ULONG getTotalBlocks() override;
+        /**
+         * @brief Retrieves the total number of sectors in the SST26 flash device.
+         *
+         * This function returns the total number of sectors in the SST26 flash device.
+         *
+         * @return The total number of sectors in the SST26 flash device.
+         */
+        ULONG getTotalSectors() override;
 
-        ULONG getBlockSize() override;
 
-        UINT readSector(uint32_t addr, uint8_t *out, uint16_t size) override;
+        /**
+         * @brief Retrieves the sector size of the SST26 flash device.
+         *
+         * This method returns the sector size of the SST26 flash device.
+         *
+         * @return The sector size of the SST26 flash device.
+         */
+        ULONG getSectorSize() override;
+
+
+        /**
+         * @brief Reads data from the specified address in the SST26 flash device.
+         *
+         * @param addr The address to read data from.
+         *
+         * @param out Pointer to the buffer where the read data will be stored.
+         *            It is the caller's responsibility to provide a buffer with enough capacity
+         *            to hold the requested number of bytes (size).
+         *
+         * @param size The number of bytes to read from the specified address.
+         *
+         * @return Upon successful completion, the function returns LX_SUCCESS.
+         *         If an error occurs during the read operation, LX_ERROR is returned.
+         */
+        UINT read(uint32_t addr, uint8_t *out, uint16_t size) override;
+
 
         /**
          * @brief Writes a sector of data to the SST26 flash device.
@@ -711,9 +799,42 @@ namespace Stm32LevelX::Driver {
          *
          * @return Returns an @c UINT value indicating the status of the write operation.
          */
-        UINT writeSector(uint32_t addr, uint8_t *in, uint16_t size) override;
+        UINT write(uint32_t addr, uint8_t *in, uint16_t size) override;
 
+
+        /**
+         * @brief Erases a sector of the SST26 flash device.
+         *
+         * This method erases a sector of the SST26 flash device at the specified address.
+         * The erase count specifies how many times the sector has been erased.
+         *
+         * @param addr The address of the sector to be erased.
+         * @param erase_count The number of times the sector was erased.
+         * @return The status of the erase operation. Returns LX_SUCCESS if the operation is successful,
+         *         or LX_ERROR if an error occurs.
+         */
+        UINT eraseSector(uint32_t addr, ULONG erase_count) override;
+
+
+        /**
+         * @brief Verifies if a block of memory is erased.
+         *
+         * This method checks if the block of memory starting at the specified address is erased.
+         *
+         * @param addr The starting address of the block of memory.
+         * @return LX_SUCCESS if the block is erased, LX_ERROR if it is not erased or an error occurs.
+         * @note addr must mark the exact start of a block.
+         */
+        UINT verifySectorErased(uint32_t addr) override;
+
+
+        /**
+         * @brief Resets the SST26 flash device.
+         *
+         * @return The return value of this method is of type UINT.
+         */
         UINT reset() override;
+
 
     protected:
         Stm32Spi::Spi *spi;

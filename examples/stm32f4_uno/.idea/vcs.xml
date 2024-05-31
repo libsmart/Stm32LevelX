@@ -4,7 +4,9 @@
     <mapping directory="$PROJECT_DIR$/../.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Lib/Stm32Common" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Lib/Stm32Gpio" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Lib/Stm32Gpio/examples/stm32f1_gpio/Lib/Stm32Common" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Lib/Stm32ItmLogger" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Lib/Stm32ItmLogger/examples/stm32f1_cpp_logger/Lib/Stm32Common" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Lib/Stm32Spi" vcs="Git" />
   </component>
 </project>

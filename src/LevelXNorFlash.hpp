@@ -10,6 +10,8 @@
 #include <main.h>
 
 #include <AbstractNorDriver.hpp>
+#include <Driver/Sst26Driver.hpp>
+
 #include "Loggable.hpp"
 #include "lx_api.h"
 #include "Nameable.hpp"
@@ -68,7 +70,7 @@ namespace Stm32LevelX {
             self->driver->reset();
 
 
-            ULONG block_size = 4096;
+            ULONG block_size = self->driver->getSectorSize();
             ULONG total_blocks = 512;
 
             /* Setup the base address of the flash memory.  */
@@ -97,7 +99,11 @@ namespace Stm32LevelX {
                     ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_read_sector(0x%08x, 0x%08x, %d)\r\n",
                              flash_address, &destination, words);
 
-            return self->driver->readSector((uint32_t) flash_address, (uint8_t *) destination, words * sizeof(ULONG));
+            return self->driver->read(
+                reinterpret_cast<uint32_t>(flash_address),
+                reinterpret_cast<uint8_t *>(destination),
+                words * sizeof(ULONG)
+            );
         }
 
         static UINT nor_driver_write_sector(ULONG *flash_address, ULONG *source, ULONG words) {
@@ -105,7 +111,11 @@ namespace Stm32LevelX {
                     ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_write_sector(0x%08x, 0x%08x, %d)\r\n",
                              flash_address, &source, words);
 
-            return self->driver->writeSector((uint32_t) flash_address, (uint8_t *) source, words * sizeof(ULONG));
+            return self->driver->write(
+                reinterpret_cast<uint32_t>(flash_address),
+                reinterpret_cast<uint8_t *>(source),
+                words * sizeof(ULONG)
+            );
         }
 
 
@@ -114,7 +124,7 @@ namespace Stm32LevelX {
                     ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_block_erase(0x%08x, %d)\r\n",
                              block, erase_count);
 
-            return LX_ERROR;
+            return self->driver->eraseSector(block * self->lx_nor_flash_words_per_block * sizeof(ULONG), erase_count);
         }
 
         static UINT nor_driver_block_erased_verify(ULONG block) {
@@ -122,7 +132,7 @@ namespace Stm32LevelX {
                     ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_block_erased_verify(0x%08x)\r\n",
                              block);
 
-            return LX_ERROR;
+            return self->driver->verifySectorErased(block * self->lx_nor_flash_words_per_block * sizeof(ULONG));
         }
 
         static UINT nor_driver_system_error(UINT error_code) {
@@ -130,6 +140,7 @@ namespace Stm32LevelX {
                     ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_system_error(0x%04x)\r\n",
                              error_code);
 
+            self->driver->reset();
             return LX_ERROR;
         }
 

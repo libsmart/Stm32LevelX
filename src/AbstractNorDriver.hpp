@@ -16,12 +16,12 @@ namespace Stm32LevelX {
     public:
         virtual ~AbstractNorDriver() = default;
 
-        virtual ULONG getTotalBlocks() = 0;
-        virtual ULONG getBlockSize() = 0;
-        virtual UINT readSector(uint32_t addr, uint8_t *out, uint16_t size) = 0;
-        virtual UINT writeSector(uint32_t addr, uint8_t *in, uint16_t size) = 0;
-        // virtual UINT eraseBlock(ULONG block, ULONG erase_count) = 0;
-        // virtual UINT eraseBlockVerify(ULONG block) = 0;
+        virtual ULONG getTotalSectors() = 0;
+        virtual ULONG getSectorSize() = 0;
+        virtual UINT read(uint32_t addr, uint8_t *out, uint16_t size) = 0;
+        virtual UINT write(uint32_t addr, uint8_t *in, uint16_t size) = 0;
+        virtual UINT eraseSector(uint32_t addr, ULONG erase_count) = 0;
+        virtual UINT verifySectorErased(uint32_t addr) = 0;
 
         virtual UINT reset() = 0;
     };
