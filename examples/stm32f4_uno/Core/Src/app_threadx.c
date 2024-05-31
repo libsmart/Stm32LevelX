@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "main.h"
 #include "setupMainThread.hpp"
+#include "Stm32GcodeRunnerCPPWrapper.hpp"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,6 +68,8 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 
   // Jump to our C++ thread setup function
   ret = setupMainThread(byte_pool);
+  assert_param(ret == TX_SUCCESS);
+  ret = Stm32GcodeRunner_setupThread(byte_pool);
   assert_param(ret == TX_SUCCESS);
 
   /* USER CODE END App_ThreadX_Init */

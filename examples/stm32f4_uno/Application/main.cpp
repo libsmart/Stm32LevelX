@@ -224,6 +224,7 @@ void setup() {
 
 
     pinSpi1Nss.setup();
+    Serial1.begin();
 
     uint32_t addr = 0x00;
 
@@ -258,6 +259,9 @@ void setup() {
  * @see mainLoopThread() in AZURE_RTOS/App/app_azure_rtos.c
  */
 void loop() {
+
+    Serial1.loop();
+
     static Stm32Common::RunEvery re2(300);
     re2.loop([]() {
         HAL_GPIO_WritePin(LED1_GRN_GPIO_Port, LED1_GRN_Pin, dummyCpp & 1 ? GPIO_PIN_RESET : GPIO_PIN_SET);

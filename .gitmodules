@@ -10,3 +10,12 @@
 [submodule "examples/stm32f4_uno/Lib/Stm32Gpio"]
 	path = examples/stm32f4_uno/Lib/Stm32Gpio
 	url = https://github.com/libsmart/Stm32Gpio.git
+[submodule "examples/stm32f4_uno/Lib/Stm32Serial"]
+	path = examples/stm32f4_uno/Lib/Stm32Serial
+	url = https://github.com/libsmart/Stm32Serial.git
+[submodule "examples/stm32f4_uno/Lib/Stm32GcodeRunner"]
+	path = examples/stm32f4_uno/Lib/Stm32GcodeRunner
+	url = https://github.com/libsmart/Stm32GcodeRunner.git
+[submodule "examples/stm32f4_uno/Lib/Stm32ThreadX"]
+	path = examples/stm32f4_uno/Lib/Stm32ThreadX
+	url = https://github.com/libsmart/Stm32ThreadX.git

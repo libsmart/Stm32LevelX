@@ -8,8 +8,8 @@
  * @see globals.cpp
  */
 
-#ifndef AQUADECAY_TANKBOX_APPLICATION_GLOBALS_HPP
-#define AQUADECAY_TANKBOX_APPLICATION_GLOBALS_HPP
+#ifndef STM32F4_UNO_APPLICATION_GLOBALS_HPP
+#define STM32F4_UNO_APPLICATION_GLOBALS_HPP
 
 #include "globals.h"
 #include "Stm32ItmLogger.hpp"
@@ -17,7 +17,11 @@
 #include <LevelXNorFlash.hpp>
 #include <Driver/Sst26Driver.hpp>
 
+#include "SerialGcode.hpp"
+#include "Stm32Serial.hpp"
 #include "Stm32Spi.hpp"
+#include "usart.h"
+#include "Driver/Stm32HalUartItDriver.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,8 +45,11 @@ inline Stm32LevelX::LevelXNorFlash LX(&sst26, &Stm32ItmLogger::logger);
 inline ULONG sector[LX_NOR_SECTOR_SIZE] = {};
 inline char *str = (char *) sector;
 
+inline Stm32Serial::Stm32HalUartItDriver Uart1SerialDriver(&huart1, "Uart1SerialDriver");
+inline SerialGcode Serial1(&Uart1SerialDriver);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif //AQUADECAY_TANKBOX_APPLICATION_GLOBALS_HPP
+#endif

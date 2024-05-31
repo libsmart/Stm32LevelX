@@ -8,8 +8,8 @@
  * @see globals.c
  */
 
-#ifndef AQUADECAY_TANKBOX_APPLICATION_GLOBALS_H
-#define AQUADECAY_TANKBOX_APPLICATION_GLOBALS_H
+#ifndef STM32F4_UNO_APPLICATION_GLOBALS_H
+#define STM32F4_UNO_APPLICATION_GLOBALS_H
 
 #include <stddef.h>
 #include "defines.h"
@@ -27,4 +27,4 @@ extern "C" {
 }
 #endif
 
-#endif //AQUADECAY_TANKBOX_APPLICATION_GLOBALS_H
+#endif

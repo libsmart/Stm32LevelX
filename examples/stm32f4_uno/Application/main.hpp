@@ -8,8 +8,8 @@
  * @see main.cpp
  */
 
-#ifndef AQUADECAY_TANKBOX_APPLICATION_MAIN_HPP
-#define AQUADECAY_TANKBOX_APPLICATION_MAIN_HPP
+#ifndef STM32F4_UNO_APPLICATION_MAIN_HPP
+#define STM32F4_UNO_APPLICATION_MAIN_HPP
 
 #include "main.h"
 
@@ -25,4 +25,4 @@ extern "C" {
 }
 #endif
 
-#endif //AQUADECAY_TANKBOX_APPLICATION_MAIN_HPP
+#endif
