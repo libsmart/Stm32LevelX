@@ -14,78 +14,52 @@
 #include "RunEvery.hpp"
 
 
-/**
- * @brief Setup function.
- * This function is called once at the beginning of the program before ThreadX is initialized.
- * @see main() in Core/Src/main.c
- */
-void setup() {
-    dummyCpp = 0;
-    dummyCandCpp = 0;
 
-
-    pinSpi1Nss.setup();
-
+void testSpiInterface() {
+    uint8_t spi_buf[8];
 
     Logger.printf("spi.getState() = 0x%08x\r\n", spi.getState());
     Logger.printf("spi.getError() = 0x%08x\r\n", spi.getError());
 
-
-    uint8_t spi_buf[8];
-
-
     Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+    Logger.printf("sst26.RDCR() = 0x%02x\r\n", sst26.RDCR());
 
-    sst26.reset();
-    sst26.waitForComOk();
-    sst26.RDID(spi_buf, sizeof(spi_buf));
-
-    // spi.select();
-    // spi.transmit((uint8_t) 0x9f); // RDID
-    // memset(spi_buf, 0, sizeof(spi_buf));
-    // spi.receive(spi_buf, 3);
-    // spi.unselect();
+    spi.select();
+    spi.transmit((uint8_t) 0x9f); // RDID
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 3);
+    spi.unselect();
 
     Logger.printf("SST26 JEDEC ID: 0x%02x 0x%02x 0x%02x\r\n",
-                  (uint8_t) spi_buf[0], (uint8_t) spi_buf[1], (uint8_t) spi_buf[2]);
+              (uint8_t) spi_buf[0], (uint8_t) spi_buf[1], (uint8_t) spi_buf[2]);
     if ((spi_buf[0] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_0) || (spi_buf[1] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_1) || (spi_buf[2] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_2)) {
         Logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
                 ->println("ERROR: NO SST26 chip detected!");
     }
 
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit_be((uint32_t) 0x000260ff);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    spi.unselect();
+    Logger.printf("SFDP 0x260: 0x%02x\r\n", spi_buf[0]);
 
-    /*
-    // spi.select();
-    // spi.transmit((uint8_t) 0x5a); // SFDP
-    // spi.transmit((uint32_t) 0xff600200);
-    // memset(spi_buf, 0, sizeof(spi_buf));
-    // spi.receive(spi_buf, 1);
-    // spi.unselect();
-    // Logger.printf("SFDP 0x260: 0x%02x\r\n", spi_buf[0]);
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit("\x00\x02\x61\xff", 4);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    spi.unselect();
+    Logger.printf("SFDP 0x261: 0x%02x\r\n", spi_buf[0]);
 
-    Logger.printf("SFDP 0x260: 0x%02x\r\n", sst26.SFDP(0x260));
-
-
-    // spi.select();
-    // spi.transmit((uint8_t) 0x5a); // SFDP
-    // spi.transmit("\x00\x02\x61\xff", 4);
-    // memset(spi_buf, 0, sizeof(spi_buf));
-    // spi.receive(spi_buf, 1);
-    // spi.unselect();
-    // Logger.printf("SFDP 0x261: 0x%02x\r\n", spi_buf[0]);
-
-    Logger.printf("SFDP 0x261: 0x%02x\r\n", sst26.SFDP(0x261));
-
-
-    // spi.select();
-    // spi.transmit((uint8_t) 0x5a); // SFDP
-    // spi.transmit_be((uint32_t) 0x262 << 8 | 0xff);
-    // memset(spi_buf, 0, sizeof(spi_buf));
-    // spi.receive(spi_buf, 1);
-    // spi.unselect();
-    // Logger.printf("SFDP 0x262: 0x%02x\r\n", spi_buf[0]);
-
-    Logger.printf("SFDP 0x262: 0x%02x\r\n", sst26.SFDP(0x262));
+    spi.select();
+    spi.transmit((uint8_t) 0x5a); // SFDP
+    spi.transmit_be((uint32_t) 0x262 << 8 | 0xff);
+    memset(spi_buf, 0, sizeof(spi_buf));
+    spi.receive(spi_buf, 1);
+    spi.unselect();
+    Logger.printf("SFDP 0x262: 0x%02x\r\n", spi_buf[0]);
 
     spi.select();
     spi.transmit((uint8_t) 0x5a); // SFDP
@@ -127,10 +101,35 @@ void setup() {
     spi.receive(spi_buf, 1);
     Logger.printf("SFDP 0x266: 0x%02x\r\n", spi_buf[0]);
     spi.unselect();
-    */
+
+}
 
 
-    /*
+void testSst26Driver() {
+
+    uint8_t spi_buf[8];
+
+
+    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+
+    sst26.reset();
+    sst26.waitForComOk();
+    sst26.RDID(spi_buf, sizeof(spi_buf));
+
+
+
+    Logger.printf("SST26 JEDEC ID: 0x%02x 0x%02x 0x%02x\r\n",
+                  (uint8_t) spi_buf[0], (uint8_t) spi_buf[1], (uint8_t) spi_buf[2]);
+    if ((spi_buf[0] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_0) || (spi_buf[1] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_1) || (spi_buf[2] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_2)) {
+        Logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
+                ->println("ERROR: NO SST26 chip detected!");
+    }
+
+
+    Logger.printf("SFDP 0x260: 0x%02x\r\n", sst26.SFDP(0x260));
+    Logger.printf("SFDP 0x261: 0x%02x\r\n", sst26.SFDP(0x261));
+    Logger.printf("SFDP 0x262: 0x%02x\r\n", sst26.SFDP(0x262));
+
     memset(spi_buf, 0, sizeof(spi_buf));
     sst26.RSID(0, spi_buf, sizeof(spi_buf));
     Logger.printf("RSID: 0x%02x%02x%02x%02x%02x%02x%02x%02x\r\n",
@@ -144,31 +143,31 @@ void setup() {
                   spi_buf[0], spi_buf[1], spi_buf[2], spi_buf[3],
                   spi_buf[4], spi_buf[5]
     );
-    */
+
+}
 
 
-    // LX.initialize();
-    // LX.open();
+void testSst26Read(uint32_t addr) {
+    memset(sector, 82, sizeof(sector));
+    sst26.READ(addr, (uint8_t *) &sector[0], sizeof(sector));
+
 
     Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
-    Logger.printf("sst26.RDCR() = 0x%02x\r\n", sst26.RDCR());
+    Logger.printf("%.*s\r\n", 10, str);
+}
 
-    sst26.WREN(); sst26.ULBPR(); sst26.WRDI();
 
-    uint32_t addr = 0x00;
-    ULONG sector[LX_NOR_SECTOR_SIZE] = {};
-    char *str = (char *) sector;
-
+void testSst26Write(uint32_t addr) {
 
     /*
-    snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
-    sst26.WREN();
-    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
-    sst26.PP(addr, (uint8_t *) sector, strlen((char *) sector));
-    sst26.waitForWriteFinish();
-    sst26.WRDI();
-    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
-    */
+snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
+sst26.WREN();
+Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+sst26.PP(addr, (uint8_t *) sector, strlen((char *) sector));
+sst26.waitForWriteFinish();
+sst26.WRDI();
+Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+*/
 
 
     for (uint32_t i = 0; i <= 300; i++) {
@@ -177,35 +176,79 @@ void setup() {
     snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
     // sst26.write(addr, (uint8_t *) sector, 300);
 
-    const uint32_t addr1 = 0x0000;
-    auto ret = sst26.verifySectorErased(addr1);
-    Logger.printf("sst26.verifySectorErased(0x%08x) = 0x%02x\r\n", addr1, ret);
+}
 
 
-    // ret = sst26.eraseSector(addr1, 0);
-    // Logger.printf("sst26.eraseSector(0x%08x) = 0x%02x\r\n", addr1, ret);
+void testSst26Erase(uint32_t addr) {
+    auto ret = sst26.verifySectorErased(addr);
+    Logger.printf("sst26.verifySectorErased(0x%08x) = 0x%02x\r\n", addr, ret);
+
+
+    // ret = sst26.eraseSector(addr, 0);
+    // Logger.printf("sst26.eraseSector(0x%08x) = 0x%02x\r\n", addr, ret);
     // sst26.waitForWriteFinish();
+}
 
 
+void testLevelXInitialize() {
+    LX.initialize();
+    LX.open();
+}
+
+
+void testLevelXWrite() {
     memset(sector, 82, sizeof(sector));
-    sst26.READ(addr, (uint8_t *) &sector[0], sizeof(sector));
+    snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
+    auto ret = LX.sectorWrite(0, sector);
+    Logger.printf("LX.sectorWrite(0, sector) = 0x%02x\r\n", 10, ret);
+}
 
 
-    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+void testLevelXRead() {
+    memset(sector, 0, sizeof(sector));
+    auto ret = LX.sectorRead(0, sector);
+    Logger.printf("LX.sectorRead(0, sector) = 0x%02x\r\n", 10, ret);
     Logger.printf("%.*s\r\n", 10, str);
+}
 
 
-    for (;;) { ; }
 
-    // BREAKPOINT;
+/**
+ * @brief Setup function.
+ * This function is called once at the beginning of the program before ThreadX is initialized.
+ * @see main() in Core/Src/main.c
+ */
+void setup() {
+    dummyCpp = 0;
+    dummyCandCpp = 0;
 
-    // memset(sector, 82, sizeof(sector));
-    // snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
-    // LX.sectorWrite(0, sector);
 
-    // memset(sector, 0, sizeof(sector));
-    // LX.sectorRead(0, sector);
-    // LX.sectorRead(0, sector);
+    pinSpi1Nss.setup();
+
+    uint32_t addr = 0x00;
+
+    // testSpiInterface();
+
+    // testSst26Driver();
+
+    // sst26.WREN(); sst26.ULBPR(); sst26.WRDI();
+
+    // testSst26Erase(addr);
+
+    // testSst26Write(addr);
+
+    // testSst26Read(addr);
+
+
+    // testLevelXInitialize();
+    // testLevelXWrite();
+    // testLevelXRead();
+    // testSst26Read(addr);
+
+    // for (;;) {};
+
+
+
 }
 
 

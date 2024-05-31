@@ -828,6 +828,8 @@ namespace Stm32LevelX::Driver {
         UINT verifySectorErased(uint32_t addr) override;
 
 
+        UINT initialize() override;
+
         /**
          * @brief Resets the SST26 flash device.
          *

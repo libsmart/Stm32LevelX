@@ -67,8 +67,7 @@ namespace Stm32LevelX {
                     ->printf("Stm32LevelX::LevelXNorFlash::driver_initialize()\r\n");
 
 
-            self->driver->reset();
-
+            self->driver->initialize();
 
             ULONG block_size = self->driver->getSectorSize();
             ULONG total_blocks = 512;
@@ -80,8 +79,8 @@ namespace Stm32LevelX {
             nor_flash->lx_nor_flash_total_blocks = total_blocks;
             nor_flash->lx_nor_flash_words_per_block = block_size / sizeof(ULONG);
 
-            nor_flash->lx_nor_flash_driver_read = nor_driver_read_sector;
-            nor_flash->lx_nor_flash_driver_write = nor_driver_write_sector;
+            nor_flash->lx_nor_flash_driver_read = nor_driver_read;
+            nor_flash->lx_nor_flash_driver_write = nor_driver_write;
 
             nor_flash->lx_nor_flash_driver_block_erase = nor_driver_block_erase;
             nor_flash->lx_nor_flash_driver_block_erased_verify = nor_driver_block_erased_verify;
@@ -94,7 +93,7 @@ namespace Stm32LevelX {
         }
 
 
-        static UINT nor_driver_read_sector(ULONG *flash_address, ULONG *destination, ULONG words) {
+        static UINT nor_driver_read(ULONG *flash_address, ULONG *destination, ULONG words) {
             Stm32ItmLogger::logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
                     ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_read_sector(0x%08x, 0x%08x, %d)\r\n",
                              flash_address, &destination, words);
@@ -106,7 +105,7 @@ namespace Stm32LevelX {
             );
         }
 
-        static UINT nor_driver_write_sector(ULONG *flash_address, ULONG *source, ULONG words) {
+        static UINT nor_driver_write(ULONG *flash_address, ULONG *source, ULONG words) {
             Stm32ItmLogger::logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
                     ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_write_sector(0x%08x, 0x%08x, %d)\r\n",
                              flash_address, &source, words);
@@ -136,12 +135,13 @@ namespace Stm32LevelX {
         }
 
         static UINT nor_driver_system_error(UINT error_code) {
-            Stm32ItmLogger::logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
+            Stm32ItmLogger::logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
                     ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_system_error(0x%04x)\r\n",
                              error_code);
 
-            self->driver->reset();
-            return LX_ERROR;
+            // self->driver->reset();
+            return self->driver->initialize();
+            return LX_SUCCESS;
         }
 
     protected:

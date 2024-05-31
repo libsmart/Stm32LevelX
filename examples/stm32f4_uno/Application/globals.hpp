@@ -32,11 +32,14 @@ inline Stm32ItmLogger::Stm32ItmLogger &Logger = Stm32ItmLogger::logger;
 
 inline Stm32Gpio::PinDigitalOut pinSpi1Nss(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, true);
 
-inline Stm32Spi::Spi spi(&hspi1, &pinSpi1Nss, &Stm32ItmLogger::logger);
+inline Stm32Spi::Spi spi(&hspi1, &pinSpi1Nss/*, &Stm32ItmLogger::logger*/);
 
 inline Stm32LevelX::Driver::Sst26Driver sst26(&spi, &Stm32ItmLogger::logger);
 
 inline Stm32LevelX::LevelXNorFlash LX(&sst26, &Stm32ItmLogger::logger);
+
+inline ULONG sector[LX_NOR_SECTOR_SIZE] = {};
+inline char *str = (char *) sector;
 
 #ifdef __cplusplus
 }

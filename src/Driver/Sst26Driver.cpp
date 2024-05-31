@@ -84,6 +84,18 @@ UINT Sst26Driver::verifySectorErased(const uint32_t addr) {
     return LX_SUCCESS;
 }
 
+UINT Sst26Driver::initialize() {
+    log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
+            ->printf("Stm32LevelX::Driver::Sst26Driver::initialize()\r\n");
+
+    reset();
+    if (waitForComOk(40) != HalStatus::HAL_OK) return LX_ERROR;
+    WREN();
+    ULBPR();
+    WRDI();
+    return LX_SUCCESS;
+}
+
 UINT Sst26Driver::reset() {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
             ->printf("Stm32LevelX::Driver::Sst26Driver::reset()\r\n");
