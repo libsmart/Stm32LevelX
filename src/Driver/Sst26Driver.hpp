@@ -30,6 +30,18 @@ namespace Stm32LevelX::Driver {
               spi(spi) { ; }
 
 
+        static constexpr uint32_t PAGE_SIZE = 256;
+
+        class JEDECID {
+        public:
+            static constexpr uint8_t BYTE_0 = 0xBF;
+            static constexpr uint8_t MANUFACTURER_ID = BYTE_0;
+            static constexpr uint8_t BYTE_1 = 0x26;
+            static constexpr uint8_t DEVICE_TYPE = BYTE_1;
+            static constexpr uint8_t BYTE_2 = 0x41;
+            static constexpr uint8_t DEVICE_ID = BYTE_2;
+        };
+
         class Instruction {
         public:
             static constexpr uint8_t NOP = 0x00; ///< No Operation
@@ -356,11 +368,23 @@ namespace Stm32LevelX::Driver {
         /**
          * @brief Write Enable (WREN)
          *
-         * This method enables write operations to the SST26 memory chip. It sets the severity of the logger
-         * to informational level, prints a log message indicating the execution of the WREN method, selects
-         * the SPI interface, transmits the instruction for write enable (WREN), and then unselects the SPI interface.
-         * Finally, it checks if the write enable latch (WEL) is set and returns `HalStatus::HAL_OK` if it is set,
-         * otherwise `HalStatus::HAL_ERROR`.
+         * This method enables write operations to the SST26 memory chip.
+         * The Write-Enable Latch bit is automatically reset under
+         * the following conditions:
+         * - Power-up
+         * - Reset
+         * - Write-Disable (WRDI) instruction
+         * - Page-Program instruction completion
+         * - Sector-Erase instruction completion
+         * - Block-Erase instruction completion
+         * - Chip-Erase instruction completion
+         * - Write-Block-Protection register instruction
+         * - Lock-Down Block-Protection register instruction
+         * - Program Security ID instruction completion
+         * - Lockout Security ID instruction completion
+         * - Write-Suspend instruction
+         * - SPI Quad Page program instruction completion
+         * - Write Status Register
          *
          * @return The HAL status indicating the success or failure of the write enable operation. Possible values are:
          *         - `HalStatus::HAL_OK` if the write enable operation was successful
@@ -411,10 +435,12 @@ namespace Stm32LevelX::Driver {
                     ->printf("Stm32LevelX::Driver::Sst26Driver::PP(0x%08x, %p, %lu)\r\n",
                              addr, &pData, size);
             if (!isWEL()) return HalStatus::HAL_ERROR;
-            if (size > 256) return HalStatus::HAL_ERROR;
+            if (size > PAGE_SIZE) return HalStatus::HAL_ERROR;
+            if (size <= 0) return HalStatus::HAL_ERROR;
+            const auto sz = std::min(size, static_cast<uint16_t>(PAGE_SIZE - (addr & 0x000000FF)));
             spi->select();
             auto ret = spi->transmit_be(Instruction::PP << 24 | addr & 0x00FFFFFF);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(pData, size);
+            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(pData, sz);
             spi->unselect();
             return ret;
         }
@@ -600,6 +626,29 @@ namespace Stm32LevelX::Driver {
         }
 
 
+        bool isComOk() {
+            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
+                    ->printf("Stm32LevelX::Driver::Sst26Driver::isComOk()\r\n");
+            uint8_t jedecId[3] = {};
+            RDID(jedecId, sizeof(jedecId));
+            return (jedecId[0] == JEDECID::BYTE_0)
+                   && (jedecId[1] == JEDECID::BYTE_1)
+                   && (jedecId[2] == JEDECID::BYTE_2);
+        }
+
+        HalStatus waitForComOk(const uint32_t timeout_ms) {
+            const uint32_t start_ms = millis();
+            while (!isComOk()) {
+                delay(1);
+                if ((timeout_ms > 0) && (millis() - start_ms > timeout_ms)) return HalStatus::HAL_TIMEOUT;
+            }
+            return HalStatus::HAL_OK;
+        }
+
+        HalStatus waitForComOk() {
+            return waitForComOk(0);
+        }
+
         /**
          * @brief Retrieves the EUI-48 (Extended Unique Identifier) from the device.
          *
@@ -650,6 +699,18 @@ namespace Stm32LevelX::Driver {
 
         UINT readSector(uint32_t addr, uint8_t *out, uint16_t size) override;
 
+        /**
+         * @brief Writes a sector of data to the SST26 flash device.
+         *
+         * This method writes a sector of data to the SST26 flash device starting from the specified address.
+         * The size of the sector must be specified in bytes.
+         *
+         * @param addr The starting address of the sector in the flash memory.
+         * @param in Pointer to the input data to be written.
+         * @param size The size of the input data in bytes.
+         *
+         * @return Returns an @c UINT value indicating the status of the write operation.
+         */
         UINT writeSector(uint32_t addr, uint8_t *in, uint16_t size) override;
 
         UINT reset() override;

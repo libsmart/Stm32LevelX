@@ -36,6 +36,8 @@ void setup() {
 
     Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
 
+    sst26.reset();
+    sst26.waitForComOk();
     sst26.RDID(spi_buf, sizeof(spi_buf));
 
     // spi.select();
@@ -46,7 +48,7 @@ void setup() {
 
     Logger.printf("SST26 JEDEC ID: 0x%02x 0x%02x 0x%02x\r\n",
                   (uint8_t) spi_buf[0], (uint8_t) spi_buf[1], (uint8_t) spi_buf[2]);
-    if ((spi_buf[0] != 0xbf) || (spi_buf[1] != 0x26) || (spi_buf[2] != 0x41)) {
+    if ((spi_buf[0] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_0) || (spi_buf[1] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_1) || (spi_buf[2] != Stm32LevelX::Driver::Sst26Driver::JEDECID::BYTE_2)) {
         Logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
                 ->println("ERROR: NO SST26 chip detected!");
     }
@@ -151,12 +153,12 @@ void setup() {
     Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
     Logger.printf("sst26.RDCR() = 0x%02x\r\n", sst26.RDCR());
 
-    sst26.WREN();
-    sst26.ULBPR();
-    sst26.WRDI();
+    sst26.WREN(); sst26.ULBPR(); sst26.WRDI();
 
-    uint32_t addr = 0x0;
+    uint32_t addr = 0x600;
     ULONG sector[LX_NOR_SECTOR_SIZE] = {};
+    char *str = (char *) sector;
+
 
     /*
     snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
@@ -168,11 +170,20 @@ void setup() {
     Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
     */
 
+
+    for (uint32_t i = 0; i <= 300; i++) {
+        str[i] = (uint8_t) i;
+    }
+    snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
+    sst26.writeSector(addr, (uint8_t *) sector, 300);
+
+
     memset(sector, 82, sizeof(sector));
     sst26.READ(addr, (uint8_t *) &sector[0], sizeof(sector));
 
 
     Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+    Logger.printf("%.*s\r\n", 10, str);
 
 
     for (;;) { ; }

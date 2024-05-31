@@ -29,18 +29,19 @@ UINT Sst26Driver::readSector(const uint32_t addr, uint8_t *out, const uint16_t s
     return ret == Stm32Common::HalStatus::HAL_OK ? LX_SUCCESS : LX_ERROR;
 }
 
-UINT Sst26Driver::writeSector(uint32_t addr, uint8_t *in, uint16_t size) {
+UINT Sst26Driver::writeSector(const uint32_t addr, uint8_t *in, const uint16_t size) {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
             ->printf("Stm32LevelX::Driver::Sst26Driver::writeSector(0x%08x, %p, %lu)\r\n",
                      addr, &in, size);
-    UNUSED(WREN());
-    for (uint16_t i = 0; i <= ((size * sizeof(ULONG)) / 256); i++) {
+
+    for (uint16_t i = 0; i <= (size / 256); i++) {
+        WREN();
         PP(addr + i * 256, &in[i * 256], std::min(size - i * 256, 256));
-        if (waitForWriteFinish() == Stm32Common::HalStatus::HAL_TIMEOUT) {
+        if (waitForWriteFinish(10) == HalStatus::HAL_TIMEOUT) {
             return LX_ERROR;
         }
     }
-    UNUSED(WRDI());
+    WRDI();
     return LX_SUCCESS;
 }
 
