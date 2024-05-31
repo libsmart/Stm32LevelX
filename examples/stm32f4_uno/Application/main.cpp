@@ -34,15 +34,15 @@ void setup() {
     uint8_t spi_buf[8];
 
 
+    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+
     sst26.RDID(spi_buf, sizeof(spi_buf));
 
-    /*
-    spi.select();
-    spi.transmit((uint8_t) 0x9f); // RDID
-    memset(spi_buf, 0, sizeof(spi_buf));
-    spi.receive(spi_buf, 3);
-    spi.unselect();
-    */
+    // spi.select();
+    // spi.transmit((uint8_t) 0x9f); // RDID
+    // memset(spi_buf, 0, sizeof(spi_buf));
+    // spi.receive(spi_buf, 3);
+    // spi.unselect();
 
     Logger.printf("SST26 JEDEC ID: 0x%02x 0x%02x 0x%02x\r\n",
                   (uint8_t) spi_buf[0], (uint8_t) spi_buf[1], (uint8_t) spi_buf[2]);
@@ -53,40 +53,35 @@ void setup() {
 
 
     /*
-    spi.select();
-    spi.transmit((uint8_t) 0x5a); // SFDP
-    spi.transmit((uint32_t) 0xff600200);
-    memset(spi_buf, 0, sizeof(spi_buf));
-    spi.receive(spi_buf, 1);
-    spi.unselect();
-    Logger.printf("SFDP 0x260: 0x%02x\r\n", spi_buf[0]);
-    */
+    // spi.select();
+    // spi.transmit((uint8_t) 0x5a); // SFDP
+    // spi.transmit((uint32_t) 0xff600200);
+    // memset(spi_buf, 0, sizeof(spi_buf));
+    // spi.receive(spi_buf, 1);
+    // spi.unselect();
+    // Logger.printf("SFDP 0x260: 0x%02x\r\n", spi_buf[0]);
 
     Logger.printf("SFDP 0x260: 0x%02x\r\n", sst26.SFDP(0x260));
 
 
-    /*
-    spi.select();
-    spi.transmit((uint8_t) 0x5a); // SFDP
-    spi.transmit("\x00\x02\x61\xff", 4);
-    memset(spi_buf, 0, sizeof(spi_buf));
-    spi.receive(spi_buf, 1);
-    spi.unselect();
-    Logger.printf("SFDP 0x261: 0x%02x\r\n", spi_buf[0]);
-    */
+    // spi.select();
+    // spi.transmit((uint8_t) 0x5a); // SFDP
+    // spi.transmit("\x00\x02\x61\xff", 4);
+    // memset(spi_buf, 0, sizeof(spi_buf));
+    // spi.receive(spi_buf, 1);
+    // spi.unselect();
+    // Logger.printf("SFDP 0x261: 0x%02x\r\n", spi_buf[0]);
 
     Logger.printf("SFDP 0x261: 0x%02x\r\n", sst26.SFDP(0x261));
 
 
-    /*
-    spi.select();
-    spi.transmit((uint8_t) 0x5a); // SFDP
-    spi.transmit_be((uint32_t) 0x262 << 8 | 0xff);
-    memset(spi_buf, 0, sizeof(spi_buf));
-    spi.receive(spi_buf, 1);
-    spi.unselect();
-    Logger.printf("SFDP 0x262: 0x%02x\r\n", spi_buf[0]);
-    */
+    // spi.select();
+    // spi.transmit((uint8_t) 0x5a); // SFDP
+    // spi.transmit_be((uint32_t) 0x262 << 8 | 0xff);
+    // memset(spi_buf, 0, sizeof(spi_buf));
+    // spi.receive(spi_buf, 1);
+    // spi.unselect();
+    // Logger.printf("SFDP 0x262: 0x%02x\r\n", spi_buf[0]);
 
     Logger.printf("SFDP 0x262: 0x%02x\r\n", sst26.SFDP(0x262));
 
@@ -130,8 +125,10 @@ void setup() {
     spi.receive(spi_buf, 1);
     Logger.printf("SFDP 0x266: 0x%02x\r\n", spi_buf[0]);
     spi.unselect();
+    */
 
 
+    /*
     memset(spi_buf, 0, sizeof(spi_buf));
     sst26.RSID(0, spi_buf, sizeof(spi_buf));
     Logger.printf("RSID: 0x%02x%02x%02x%02x%02x%02x%02x%02x\r\n",
@@ -139,12 +136,56 @@ void setup() {
                   spi_buf[4], spi_buf[5], spi_buf[6], spi_buf[7]
     );
 
+
     sst26.getEUI48(spi_buf, sizeof(spi_buf));
     Logger.printf("MAC: %02x:%02x:%02x:%02x:%02x:%02x\r\n",
-              spi_buf[0], spi_buf[1], spi_buf[2], spi_buf[3],
-              spi_buf[4], spi_buf[5]
-);
+                  spi_buf[0], spi_buf[1], spi_buf[2], spi_buf[3],
+                  spi_buf[4], spi_buf[5]
+    );
+    */
 
+
+    // LX.initialize();
+    // LX.open();
+
+    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+    Logger.printf("sst26.RDCR() = 0x%02x\r\n", sst26.RDCR());
+
+    sst26.WREN();
+    sst26.ULBPR();
+    sst26.WRDI();
+
+    uint32_t addr = 0x0;
+    ULONG sector[LX_NOR_SECTOR_SIZE] = {};
+
+    /*
+    snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
+    sst26.WREN();
+    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+    sst26.PP(addr, (uint8_t *) sector, strlen((char *) sector));
+    sst26.waitForWriteFinish();
+    sst26.WRDI();
+    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+    */
+
+    memset(sector, 82, sizeof(sector));
+    sst26.READ(addr, (uint8_t *) &sector[0], sizeof(sector));
+
+
+    Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
+
+
+    for (;;) { ; }
+
+    // BREAKPOINT;
+
+    // memset(sector, 82, sizeof(sector));
+    // snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
+    // LX.sectorWrite(0, sector);
+
+    // memset(sector, 0, sizeof(sector));
+    // LX.sectorRead(0, sector);
+    // LX.sectorRead(0, sector);
 }
 
 
