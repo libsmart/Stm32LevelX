@@ -71,3 +71,15 @@ Add the following to `USER CODE BEGIN App_ThreadX_Init`:
   assert_param(ret == TX_SUCCESS);
 ```
 
+
+
+## Flash inspector
+
+```
+E100 Cdump A0 S100
+```
+
+
+
+
+
