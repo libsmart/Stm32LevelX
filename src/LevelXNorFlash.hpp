@@ -61,6 +61,43 @@ namespace Stm32LevelX {
 
         LevelXErrorCode sectorWrite(ULONG logical_sector, VOID *buffer);
 
+        static constexpr uint32_t getSectorSize() { return LX_NOR_SECTOR_SIZE * sizeof(ULONG); }
+
+        static const char *getErrorCodeString(const LevelXErrorCode errorCode) {
+            switch (errorCode) {
+                case LevelXErrorCode::SUCCESS:
+                    return "SUCCESS";
+                case LevelXErrorCode::ERROR:
+                    return "ERROR";
+                case LevelXErrorCode::NO_SECTORS:
+                    return "NO_SECTORS";
+                case LevelXErrorCode::SECTOR_NOT_FOUND:
+                    return "SECTOR_NOT_FOUND";
+                case LevelXErrorCode::NO_PAGES:
+                    return "NO_PAGES";
+                case LevelXErrorCode::INVALID_WRITE:
+                    return "INVALID_WRITE";
+                case LevelXErrorCode::NAND_ERROR_CORRECTED:
+                    return "NAND_ERROR_CORRECTED";
+                case LevelXErrorCode::NAND_ERROR_NOT_CORRECTED:
+                    return "NAND_ERROR_NOT_CORRECTED";
+                case LevelXErrorCode::NO_MEMORY:
+                    return "NO_MEMORY";
+                case LevelXErrorCode::DISABLED:
+                    return "DISABLED";
+                case LevelXErrorCode::SYSTEM_INVALID_FORMAT:
+                    return "SYSTEM_INVALID_FORMAT";
+                case LevelXErrorCode::SYSTEM_INVALID_BLOCK:
+                    return "SYSTEM_INVALID_BLOCK";
+                case LevelXErrorCode::SYSTEM_ALLOCATION_FAILED:
+                    return "SYSTEM_ALLOCATION_FAILED";
+                case LevelXErrorCode::SYSTEM_MUTEX_CREATE_FAILED:
+                    return "SYSTEM_MUTEX_CREATE_FAILED";
+                case LevelXErrorCode::SYSTEM_INVALID_SECTOR_MAP:
+                    return "SYSTEM_INVALID_SECTOR_MAP";
+            }
+            return "UNKNOWN";
+        }
 
         static UINT driver_initialize(LX_NOR_FLASH *nor_flash) {
             Stm32ItmLogger::logger.setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
@@ -147,6 +184,8 @@ namespace Stm32LevelX {
     protected:
         AbstractNorDriver *driver;
         static LevelXNorFlash *self;
+        bool isInitialized = false;
+        bool isOpen = false;
     };
 
     inline LevelXNorFlash *LevelXNorFlash::self = {};

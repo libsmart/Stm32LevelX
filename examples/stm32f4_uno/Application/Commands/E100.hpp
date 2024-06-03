@@ -40,7 +40,7 @@ public:
 
 
     runReturn runDump() {
-        A = A < 0 ? 0 : A;
+        A = std::max(A, static_cast<int32_t>(0));
         out()->printf("START_ADDRESS: 0x%08x\r\n", A);
         S = S < 0 ? 512 : S;
         out()->printf("SIZE: %d\r\n", S);

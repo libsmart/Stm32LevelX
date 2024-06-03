@@ -73,7 +73,7 @@ Add the following to `USER CODE BEGIN App_ThreadX_Init`:
 
 
 
-## Flash inspector
+## E100 Flash inspector
 
 ### Dump flash memory
 
@@ -104,6 +104,58 @@ E100 Cerase A0
 ```
 E100 Cchiperase
 ```
+
+
+
+## E101 LevelX
+
+### Initialize
+
+```
+E101 Cinit
+```
+
+
+
+### Open
+
+```
+E101 Copen
+```
+
+
+
+### Close
+
+```
+E101 Cclose
+```
+
+
+
+### Read Sector
+
+```
+E101 Cread A0
+```
+
+
+
+### Release Sector
+
+```
+E101 Crel A0
+```
+
+
+
+### Write Sector
+
+```
+E101 Cwrite A1 WHello
+```
+
+
 
 
 
