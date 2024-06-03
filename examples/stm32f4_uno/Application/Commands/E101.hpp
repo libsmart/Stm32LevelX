@@ -114,6 +114,15 @@ public:
     }
 
 
+    runReturn runDefragment() {
+        out()->printf("LEVELX_DEFRAGMENT: ");
+        const auto ret = LX.defragment();
+        out()->printf("0x%02x %s\r\n", ret, Stm32LevelX::LevelXNorFlash::getErrorCodeString(ret));
+        return ret == Stm32LevelX::LevelXErrorCode::SUCCESS ? runReturn::FINISHED : runReturn::ERROR;
+    }
+
+
+
     runReturn run() override {
         auto result = AbstractCommand::run();
 
@@ -137,6 +146,9 @@ public:
         }
         if (strcmp(C, "write") == 0) {
             result = runWriteSector();
+        }
+        if (strcmp(C, "defrag") == 0) {
+            result = runDefragment();
         }
 
 

@@ -75,29 +75,31 @@ Add the following to `USER CODE BEGIN App_ThreadX_Init`:
 
 ## E100 Flash inspector
 
+E100 operates on the NOR flash device directly. A sector is what the manufacturer of the flash device defines as a sector (4096 bytes).
+
 ### Dump flash memory
 
-```
-E100 Cdump A0 [S100]
+```<
+E100 Cdump A<address> [S<size>]
 ```
 
-
+Print  `size` Bytes the contents starting at `address`.  If `size` is not given, 512 bytes are printed.
 
 ### Check if sector is erased
 
 ```
-E100 Ccheck [A0]
+E100 Ccheck A<address>
 ```
 
-
+Checks if the sector at `address` is empty. `address` is automatically adjusted to a sector start. 0=sector is not empty, 1=sector is empty
 
 ### Erase sector
 
 ```
-E100 Cerase A0
+E100 Cerase A<address>
 ```
 
-
+Erase the sector at `address`. `address` must point exactly to a sector start.
 
 ### Erase chip
 
@@ -105,9 +107,13 @@ E100 Cerase A0
 E100 Cchiperase
 ```
 
+Erase the whole NOR flash chip. No questions asked.
+
 
 
 ## E101 LevelX
+
+https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/levelx/chapter6.md
 
 ### Initialize
 
@@ -115,7 +121,7 @@ E100 Cchiperase
 E101 Cinit
 ```
 
-
+Initialize NOR flash support
 
 ### Open
 
@@ -123,7 +129,7 @@ E101 Cinit
 E101 Copen
 ```
 
-
+Open NOR flash instance
 
 ### Close
 
@@ -131,31 +137,31 @@ E101 Copen
 E101 Cclose
 ```
 
-
+Close NOR flash instance
 
 ### Read Sector
 
 ```
-E101 Cread A0
+E101 Cread A<logical_sector>
 ```
 
-
+Read and print `logical_sector`.
 
 ### Release Sector
 
 ```
-E101 Crel A0
+E101 Crel A<logical_sector>
 ```
 
-
+Release `logical_sector`.
 
 ### Write Sector
 
 ```
-E101 Cwrite A1 WHello
+E101 Cwrite A<logical_sector> W<text>
 ```
 
-
+Write `text` into `logical_sector`.
 
 
 

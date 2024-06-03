@@ -55,6 +55,10 @@ namespace Stm32LevelX {
 
         LevelXErrorCode close();
 
+        LevelXErrorCode defragment();
+
+        LevelXErrorCode partialDefragment(UINT max_blocks);
+
         LevelXErrorCode sectorRead(ULONG logical_sector, VOID *buffer);
 
         LevelXErrorCode sectorRelease(ULONG logical_sector);

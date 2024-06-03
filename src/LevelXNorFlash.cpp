@@ -68,6 +68,48 @@ LevelXErrorCode LevelXNorFlash::close() {
     return static_cast<LevelXErrorCode>(ret);
 }
 
+LevelXErrorCode LevelXNorFlash::defragment() {
+    log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
+            ->println("Stm32LevelX::LevelXNorFlash::defragment()");
+
+    if (!isOpen) {
+        log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
+                ->printf("lx_nor_flash_defragment(): NOT OPEN\r\n");
+        return LevelXErrorCode::ERROR;
+    }
+
+    // @see https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/levelx/chapter6.md#lx_nor_flash_defragment
+    auto ret = lx_nor_flash_defragment(this);
+    if (ret != LX_SUCCESS) {
+        log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
+                ->printf("lx_nor_flash_defragment() = 0x%02x\r\n", ret);
+        return static_cast<LevelXErrorCode>(ret);
+    }
+    isOpen = false;
+    return static_cast<LevelXErrorCode>(ret);
+}
+
+LevelXErrorCode LevelXNorFlash::partialDefragment(const UINT max_blocks) {
+    log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
+            ->printf("Stm32LevelX::LevelXNorFlash::partialDefragment(%d)\r\n", max_blocks);
+
+    if (!isOpen) {
+        log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
+                ->printf("lx_nor_flash_partial_defragment(): NOT OPEN\r\n");
+        return LevelXErrorCode::ERROR;
+    }
+
+    // @see https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/levelx/chapter6.md#lx_nor_flash_partial_defragment
+    auto ret = lx_nor_flash_partial_defragment(this, max_blocks);
+    if (ret != LX_SUCCESS) {
+        log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
+                ->printf("lx_nor_flash_partial_defragment() = 0x%02x\r\n", ret);
+        return static_cast<LevelXErrorCode>(ret);
+    }
+    isOpen = false;
+    return static_cast<LevelXErrorCode>(ret);
+}
+
 LevelXErrorCode LevelXNorFlash::sectorRead(ULONG logical_sector, void *buffer) {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
             ->printf("Stm32LevelX::LevelXNorFlash::sectorRead(%lu)\r\n", logical_sector);

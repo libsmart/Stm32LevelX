@@ -71,14 +71,15 @@ public:
 
 
     runReturn runCheck() {
+        const auto SECTOR_SIZE = static_cast<int32_t>(sst26.getSectorSize());
         out()->printf("START_ADDRESS: 0x%08x\r\n", A < 0 ? 0 : A);
-        out()->printf("SECTOR_SIZE: %d\r\n", sst26.getSectorSize());
+        out()->printf("SECTOR_SIZE: %d\r\n", SECTOR_SIZE);
 
         uint32_t sectorsErased = 0;
         uint32_t sectorsNotErased = 0;
 
-        for (uint32_t sector = A >= 0 ? A / sst26.getSectorSize() : 0; sector < sst26.getTotalSectors(); sector++) {
-            const uint32_t addr = sector * sst26.getSectorSize();
+        for (uint32_t sector = A >= 0 ? A / SECTOR_SIZE : 0; sector < sst26.getTotalSectors(); sector++) {
+            const uint32_t addr = sector * SECTOR_SIZE;
             out()->printf("SECTOR_ADDRESS (SECTOR_NUMBER): 0x%08x (%d) : ", addr, sector);
             // out()->printf("SECTOR_NUMBER: %d\r\n", sector);
             auto ret = sst26.verifySectorErased(addr);
