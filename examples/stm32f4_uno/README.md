@@ -121,7 +121,7 @@ https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/levelx/chapter6
 E101 Cinit
 ```
 
-Initialize NOR flash support
+Initialize NOR flash support.
 
 ### Open
 
@@ -129,7 +129,7 @@ Initialize NOR flash support
 E101 Copen
 ```
 
-Open NOR flash instance
+Open NOR flash instance.
 
 ### Close
 
@@ -137,7 +137,7 @@ Open NOR flash instance
 E101 Cclose
 ```
 
-Close NOR flash instance
+Close NOR flash instance.
 
 ### Read Sector
 
@@ -163,5 +163,11 @@ E101 Cwrite A<logical_sector> W<text>
 
 Write `text` into `logical_sector`.
 
+### Defragment
 
+```
+E101 Cdefrag
+```
+
+Defragment NOR flash instance.
 
