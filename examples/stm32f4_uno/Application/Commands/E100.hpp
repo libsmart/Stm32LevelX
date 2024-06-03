@@ -40,7 +40,9 @@ public:
 
 
     runReturn runDump() {
-        out()->printf("START_ADDRESS: %d\r\n", A);
+        A = A < 0 ? 0 : A;
+        out()->printf("START_ADDRESS: 0x%08x\r\n", A);
+        S = S < 0 ? 512 : S;
         out()->printf("SIZE: %d\r\n", S);
 
 
@@ -50,7 +52,9 @@ public:
 
         for (uint16_t idx = 0; idx < SLICES; idx++) {
             // const uint16_t sz = std::min(S - idx * BUFFER_SIZE, static_cast<int32_t>(BUFFER_SIZE));
-            sst26.read(A + idx * BUFFER_SIZE, buffer, BUFFER_SIZE);
+            const uint32_t addr = A + idx * BUFFER_SIZE;
+            out()->printf(" 0x%08x |", addr);
+            sst26.read(addr, buffer, BUFFER_SIZE);
             for (const char c: buffer) {
                 out()->printf(" %02x", c);
             }
@@ -62,9 +66,60 @@ public:
             delay(20);
         }
 
+        return runReturn::FINISHED;
+    }
+
+
+    runReturn runCheck() {
+        out()->printf("START_ADDRESS: 0x%08x\r\n", A < 0 ? 0 : A);
+        out()->printf("SECTOR_SIZE: %d\r\n", sst26.getSectorSize());
+
+        uint32_t sectorsErased = 0;
+        uint32_t sectorsNotErased = 0;
+
+        for (uint32_t sector = A >= 0 ? A / sst26.getSectorSize() : 0; sector < sst26.getTotalSectors(); sector++) {
+            const uint32_t addr = sector * sst26.getSectorSize();
+            out()->printf("SECTOR_ADDRESS (SECTOR_NUMBER): 0x%08x (%d) : ", addr, sector);
+            // out()->printf("SECTOR_NUMBER: %d\r\n", sector);
+            auto ret = sst26.verifySectorErased(addr);
+            if (ret == LX_SUCCESS) {
+                out()->printf("1\r\n");
+                sectorsErased++;
+            } else {
+                out()->printf("0\r\n");
+                sectorsNotErased++;
+            }
+            if (A >= 0) return runReturn::FINISHED;
+            delay(20);
+        }
+        out()->printf("SECTORS_CHECKED: %d\r\n", sectorsErased + sectorsNotErased);
+        out()->printf("SECTORS_ERASED: %d\r\n", sectorsErased);
+        out()->printf("SECTORS_NOT_ERASED: %d\r\n", sectorsNotErased);
 
         return runReturn::FINISHED;
     }
+
+
+    runReturn runErase() {
+        out()->printf("SECTOR_ADDRESS: 0x%08x\r\n", A);
+        auto ret = sst26.WREN();
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.SE(A);
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.waitForWriteFinish(50);
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.WRDI();
+
+        return ret == HalStatus::HAL_OK ? runReturn::FINISHED : runReturn::ERROR;
+    }
+
+
+    runReturn runChipErase() {
+        auto ret = sst26.WREN();
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.CE();
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.waitForWriteFinish(100);
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.WRDI();
+
+        return ret == HalStatus::HAL_OK ? runReturn::FINISHED : runReturn::ERROR;
+    }
+
 
 
     runReturn run() override {
@@ -76,15 +131,29 @@ public:
         if (strcmp(C, "dump") == 0) {
             result = runDump();
         }
+        if (strcmp(C, "check") == 0) {
+            result = runCheck();
+        }
+        if (strcmp(C, "erase") == 0) {
+            result = runErase();
+        }
+        if (strcmp(C, "chiperase") == 0) {
+            result = runChipErase();
+        }
+
 
         out()->println();
 
-        result = runReturn::FINISHED;
+        // result = runReturn::FINISHED;
         return result;
     }
 
     cleanupReturn cleanup() override {
         auto result = AbstractCommand::cleanup();
+
+        S = -1;
+        A = -1;
+
         result = cleanupReturn::OK;
         return result;
     }

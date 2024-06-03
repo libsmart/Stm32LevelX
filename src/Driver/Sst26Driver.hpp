@@ -430,18 +430,49 @@ namespace Stm32LevelX::Driver {
          *         - HalStatus::HAL_OK: The erase operation was successful.
          *         - HalStatus::HAL_ERROR: The erase operation failed.
          *
-         * @see https://www.microchip.com/en-us/product/sst26vf016beui
+         * @note Wait until device is ready after this command. Tse = 25ms
+         * @see Sst26Driver::waitForWriteFinish()
          */
         HalStatus SE(const uint32_t addr) {
             log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
                     ->printf("Stm32LevelX::Driver::Sst26Driver::SE(0x%08x)\r\n",
                              addr);
+
+            if (!isWEL()) return HalStatus::HAL_ERROR;
             if (addr % SECTOR_SIZE > 0) return HalStatus::HAL_ERROR;
             spi->select();
             const auto ret = spi->transmit_be((Instruction::SE << 24) | (addr & 0x00FFFFFF));
             spi->unselect();
             return ret;
         }
+
+
+        /**
+         * @brief Sends the Erase Full Array command.
+         *
+         * This method sends the Erase Full Array command to initiate a full array erase operation.
+         * If the Write Enable Latch (WEL) bit is not set, indicating that the device is not write enabled, the method
+         * returns HAL_ERROR.
+         *
+         * @return The return value is the HalStatus enumeration that indicates the success or failure of the operation.
+         *         - HAL_OK: The CE operation was successful.
+         *         - HAL_ERROR: The CE operation failed.
+         *
+         * @note Wait until device is ready after this command. Tsce = 50ms
+         * @see Sst26Driver::waitForWriteFinish()
+         */
+        HalStatus CE() {
+            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
+                    ->printf("Stm32LevelX::Driver::Sst26Driver::CE()\r\n");
+
+            if (!isWEL()) return HalStatus::HAL_ERROR;
+            spi->select();
+            // Send the Erase Full Array command
+            const auto ret = spi->transmit(Instruction::CE);
+            spi->unselect();
+            return ret;
+        }
+
 
         /**
          * @brief Program a page (256 bytes) of data to the specified address.
@@ -455,6 +486,9 @@ namespace Stm32LevelX::Driver {
          * @return A HalStatus value indicating the success or failure of the operation.
          *         - HAL_OK: Operation was successful.
          *         - HAL_ERROR: WEL flag is not set or size is greater than 256.
+         *
+         * @note Wait until device is ready after this command. Tpp = 1.5ms
+         * @see Sst26Driver::waitForWriteFinish()
          */
         HalStatus PP(const uint32_t addr, uint8_t *pData, const uint16_t size) {
             log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
@@ -484,7 +518,7 @@ namespace Stm32LevelX::Driver {
                     ->printf("Stm32LevelX::Driver::Sst26Driver::RDID()\r\n");
             if (size < 3) return HalStatus::HAL_ERROR;
             spi->select();
-            memset(pData, 0, size);
+            // memset(pData, 0, size);
             auto ret = spi->transmit(Instruction::RDID);
             ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, 3);
             spi->unselect();
@@ -508,7 +542,7 @@ namespace Stm32LevelX::Driver {
                     ->printf("Stm32LevelX::Driver::Sst26Driver::SFDP(0x%08x, %p, %lu)\r\n",
                              addr, &pData, size);
             spi->select();
-            memset(pData, 0, size);
+            // memset(pData, 0, size);
             auto ret = spi->transmit(Instruction::SFDP);
             ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr << 8 | 0xff);
             ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
@@ -612,7 +646,7 @@ namespace Stm32LevelX::Driver {
                     ->printf("Stm32LevelX::Driver::Sst26Driver::RSID(0x%08x, %p, %lu)\r\n",
                              addr, &pData, size);
             spi->select();
-            memset(pData, 0, size);
+            // memset(pData, 0, size);
             auto ret = spi->transmit(Instruction::RSID);
             ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr);
             ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(0xff);
@@ -720,7 +754,7 @@ namespace Stm32LevelX::Driver {
             log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
                     ->printf("Stm32LevelX::Driver::Sst26Driver::getEUI48()\r\n");
             if (size < 6) return HalStatus::HAL_ERROR;
-            memset(pData, 0, size);
+            // memset(pData, 0, size);
             if (SFDP(SFDP::EUI48_PROGRAMMED) == 0x30) {
                 return SFDP(0x261, pData, 6);
             }
@@ -742,7 +776,7 @@ namespace Stm32LevelX::Driver {
             log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
                     ->printf("Stm32LevelX::Driver::Sst26Driver::getEUI64()\r\n");
             if (size < 8) return HalStatus::HAL_ERROR;
-            memset(pData, 0, size);
+            // memset(pData, 0, size);
             if (SFDP(SFDP::EUI64_PROGRAMMED) == 0x40) {
                 return SFDP(0x268, pData, 8);
             }
@@ -836,7 +870,6 @@ namespace Stm32LevelX::Driver {
          * @return The return value of this method is of type UINT.
          */
         UINT reset() override;
-
 
     protected:
         Stm32Spi::Spi *spi;

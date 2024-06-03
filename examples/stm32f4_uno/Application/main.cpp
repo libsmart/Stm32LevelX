@@ -174,7 +174,7 @@ Logger.printf("sst26.RDSR() = 0x%02x\r\n", sst26.RDSR());
         str[i] = (uint8_t) i;
     }
     snprintf(reinterpret_cast<char *>(&sector[0]), sizeof(sector), "Hallo Welt!");
-    // sst26.write(addr, (uint8_t *) sector, 300);
+    sst26.write(addr, (uint8_t *) sector, 300);
 
 }
 

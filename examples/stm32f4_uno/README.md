@@ -75,11 +75,35 @@ Add the following to `USER CODE BEGIN App_ThreadX_Init`:
 
 ## Flash inspector
 
+### Dump flash memory
+
 ```
-E100 Cdump A0 S100
+E100 Cdump A0 [S100]
 ```
 
 
+
+### Check if sector is erased
+
+```
+E100 Ccheck [A0]
+```
+
+
+
+### Erase sector
+
+```
+E100 Cerase A0
+```
+
+
+
+### Erase chip
+
+```
+E100 Cchiperase
+```
 
 
 

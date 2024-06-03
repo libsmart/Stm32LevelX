@@ -15,7 +15,7 @@
 #define STM32F4_UNO_APPLICATION_DEFINES_H
 
 /** Name of the firmware. */
-#define FIRMWARE_NAME "AquaDecay-TankBox"
+#define FIRMWARE_NAME "stm32f4_uno Stm32LevelX example"
 
 /** Version of the firmware. */
 #ifndef FIRMWARE_VERSION
