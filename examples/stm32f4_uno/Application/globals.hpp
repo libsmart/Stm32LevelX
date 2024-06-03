@@ -23,6 +23,8 @@
 #include "usart.h"
 #include "Driver/Stm32HalUartItDriver.hpp"
 
+#include "Store.hpp"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,6 +49,34 @@ inline char *str = (char *) sector;
 
 inline Stm32Serial::Stm32HalUartItDriver Uart1SerialDriver(&huart1, "Uart1SerialDriver");
 inline SerialGcode Serial1(&Uart1SerialDriver);
+
+struct structV1 {
+    uint8_t version = 1;
+    uint32_t aNumber = 43287;
+    char text[20] = {"Hello World"};
+};
+
+constexpr uint32_t structV1_logicalSector = 5;
+inline Stm32LevelX::Store<structV1> storeV1(&LX, structV1_logicalSector, &Stm32ItmLogger::logger);
+
+
+struct structV2 {
+    uint8_t version = 2;
+    uint32_t aNumber = 43287;
+    char text1[26] = {"Hello World"};
+    char text2[26] = {"Hello World"};
+    char text3[26] = {"Hello World"};
+    char text4[26] = {"Hello World"};
+    char text5[100] = {"Hello World"};
+    char text6[100] = {"Hello World"};
+    char text7[100] = {"Hello World"};
+    char text8[100] = {"Hello World"};
+    char text9[100] = {"Hello World"};
+};
+
+constexpr uint32_t structV2_logicalSector = 6;
+inline Stm32LevelX::Store<structV2> storeV2(&LX, structV2_logicalSector, &Stm32ItmLogger::logger);
+
 
 #ifdef __cplusplus
 }

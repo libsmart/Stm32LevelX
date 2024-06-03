@@ -67,6 +67,9 @@ namespace Stm32LevelX {
 
         static constexpr uint32_t getSectorSize() { return LX_NOR_SECTOR_SIZE * sizeof(ULONG); }
 
+        [[nodiscard]] bool isInitialized() const { return LX_initialized; }
+        [[nodiscard]] bool isOpen() const { return LX_open; }
+
         static const char *getErrorCodeString(const LevelXErrorCode errorCode) {
             switch (errorCode) {
                 case LevelXErrorCode::SUCCESS:
@@ -188,8 +191,8 @@ namespace Stm32LevelX {
     protected:
         AbstractNorDriver *driver;
         static LevelXNorFlash *self;
-        bool isInitialized = false;
-        bool isOpen = false;
+        bool LX_initialized = false;
+        bool LX_open = false;
     };
 
     inline LevelXNorFlash *LevelXNorFlash::self = {};

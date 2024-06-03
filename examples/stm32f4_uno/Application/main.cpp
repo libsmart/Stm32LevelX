@@ -246,6 +246,28 @@ void setup() {
     // testLevelXRead();
     // testSst26Read(addr);
 
+
+    storeV1.read();
+    auto objV1 = storeV1.getStoredObject();
+
+    if(objV1->version != 1) {
+        storeV1.initializeDefault();
+        storeV1.write();
+    }
+
+    UNUSED(objV1);
+
+
+    storeV2.read();
+    auto objV2 = storeV2.getStoredObject();
+
+    if(objV2->version != 2) {
+        storeV2.initializeDefault();
+        storeV2.write();
+    }
+
+    UNUSED(objV2);
+
     // for (;;) {};
 
 
