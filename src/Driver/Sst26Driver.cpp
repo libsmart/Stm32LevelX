@@ -46,6 +46,21 @@ UINT Sst26Driver::write(const uint32_t addr, uint8_t *in, const uint16_t size) {
         if (ret != HalStatus::HAL_OK) return LX_ERROR;
     }
     WRDI();
+
+    // Check written bytes
+#ifndef LIBSMART_STM32LEVELX_PP_READ_BACK_TEST
+    constexpr uint16_t BUFFER_SIZE = 32;
+    uint8_t buffer[BUFFER_SIZE] = {};
+    const uint16_t SLICES_CHK = (size + BUFFER_SIZE - 1) / BUFFER_SIZE;
+
+    for (uint16_t iSlice = 0; iSlice < SLICES_CHK; iSlice++) {
+        const uint16_t sz = std::min(static_cast<uint16_t>(size - iSlice * BUFFER_SIZE), BUFFER_SIZE);
+        const HalStatus ret = READ(addr + iSlice * BUFFER_SIZE, buffer, sz);
+        if (ret != HalStatus::HAL_OK) return LX_ERROR;
+        if (std::memcmp(buffer, &in[iSlice * BUFFER_SIZE], sz) != 0) return LX_INVALID_WRITE;
+    }
+#endif
+
     return LX_SUCCESS;
 }
 

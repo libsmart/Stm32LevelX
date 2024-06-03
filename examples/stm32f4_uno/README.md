@@ -85,6 +85,14 @@ E100 Cdump A<address> [S<size>]
 
 Print  `size` Bytes the contents starting at `address`.  If `size` is not given, 512 bytes are printed.
 
+### Write memory
+
+```
+E100 Cwrite A<address> W<text>
+```
+
+Write `text` to the flash device at `address`.
+
 ### Check if sector is erased
 
 ```

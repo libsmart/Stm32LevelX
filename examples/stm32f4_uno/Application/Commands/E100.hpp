@@ -54,7 +54,8 @@ public:
             // const uint16_t sz = std::min(S - idx * BUFFER_SIZE, static_cast<int32_t>(BUFFER_SIZE));
             const uint32_t addr = A + idx * BUFFER_SIZE;
             out()->printf(" 0x%08x |", addr);
-            sst26.read(addr, buffer, BUFFER_SIZE);
+            const auto ret = sst26.READ(addr, buffer, BUFFER_SIZE);
+            if (ret != HalStatus::HAL_OK) return runReturn::ERROR;
             for (const char c: buffer) {
                 out()->printf(" %02x", c);
             }
@@ -69,6 +70,17 @@ public:
         return runReturn::FINISHED;
     }
 
+    runReturn runWrite() {
+        A = std::max(A, static_cast<int32_t>(0));
+        out()->printf("START_ADDRESS: 0x%08x\r\n", A);
+
+        auto ret = sst26.WREN();
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.PP(A, reinterpret_cast<uint8_t *>(W), strlen(W));
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.waitForWriteFinish(3);
+        ret = ret != HalStatus::HAL_OK ? ret : sst26.WRDI();
+
+        return ret == HalStatus::HAL_OK ? runReturn::FINISHED : runReturn::ERROR;
+    }
 
     runReturn runCheck() {
         const auto SECTOR_SIZE = static_cast<int32_t>(sst26.getSectorSize());
@@ -122,7 +134,6 @@ public:
     }
 
 
-
     runReturn run() override {
         auto result = AbstractCommand::run();
 
@@ -131,6 +142,9 @@ public:
 
         if (strcmp(C, "dump") == 0) {
             result = runDump();
+        }
+        if (strcmp(C, "write") == 0) {
+            result = runWrite();
         }
         if (strcmp(C, "check") == 0) {
             result = runCheck();
@@ -154,6 +168,8 @@ public:
 
         S = -1;
         A = -1;
+        memset(C, 0, sizeof(C));
+        memset(W, 0, sizeof(W));
 
         result = cleanupReturn::OK;
         return result;
@@ -190,6 +206,10 @@ public:
             case 'C':
                 snprintf(C, sizeof(C), "%.*s", pos, paramString);
                 break;
+            case 'W':
+                snprintf(W, sizeof(W), "%.*s", pos, paramString);
+                break;
+
             default:
                 break;
         }
@@ -199,7 +219,8 @@ public:
 private:
     int32_t S = -1;
     int32_t A = -1;
-    char C[10] = {};
+    char C[16] = {};
+    char W[51] = {};
 };
 
 #endif

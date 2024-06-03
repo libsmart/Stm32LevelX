@@ -480,7 +480,7 @@ namespace Stm32LevelX::Driver {
          * This function programs a page of data to the specified address in the memory.
          *
          * @param addr The address to program the data to.
-         * @param pData A pointer to the data to program.
+         * @param in A pointer to the data to program.
          * @param size The size of the data to program in bytes.
          *
          * @return A HalStatus value indicating the success or failure of the operation.
@@ -490,18 +490,38 @@ namespace Stm32LevelX::Driver {
          * @note Wait until device is ready after this command. Tpp = 1.5ms
          * @see Sst26Driver::waitForWriteFinish()
          */
-        HalStatus PP(const uint32_t addr, uint8_t *pData, const uint16_t size) {
+        HalStatus PP(const uint32_t addr, uint8_t *in, const uint16_t size) {
             log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
                     ->printf("Stm32LevelX::Driver::Sst26Driver::PP(0x%08x, %p, %lu)\r\n",
-                             addr, &pData, size);
+                             addr, &in, size);
             if (!isWEL()) return HalStatus::HAL_ERROR;
             if (size > PAGE_SIZE) return HalStatus::HAL_ERROR;
             if (size <= 0) return HalStatus::HAL_ERROR;
             const auto sz = std::min(size, static_cast<uint16_t>(PAGE_SIZE - (addr & 0x000000FF)));
             spi->select();
             auto ret = spi->transmit_be(Instruction::PP << 24 | addr & 0x00FFFFFF);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(pData, sz);
+            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(in, sz);
             spi->unselect();
+            if (ret != HalStatus::HAL_OK) return ret;
+
+
+            // Check written bytes
+#ifdef LIBSMART_STM32LEVELX_PP_READ_BACK_TEST
+
+            waitForWriteFinish(3);
+            constexpr uint16_t BUFFER_SIZE = 32;
+            uint8_t buffer[BUFFER_SIZE] = {};
+            const uint16_t SLICES = (size + BUFFER_SIZE - 1) / BUFFER_SIZE;
+
+            for (uint16_t iSlice = 0; iSlice < SLICES; iSlice++) {
+                const uint16_t sz = std::min(static_cast<uint16_t>(size - iSlice * BUFFER_SIZE), BUFFER_SIZE);
+                const HalStatus ret = READ(addr + iSlice * BUFFER_SIZE, buffer, sz);
+                if (ret != HalStatus::HAL_OK) return ret;
+                if (std::memcmp(buffer, &in[iSlice * BUFFER_SIZE], sz) != 0) return HalStatus::HAL_ERROR;
+            }
+
+#endif
+
             return ret;
         }
 

@@ -122,7 +122,6 @@ public:
     }
 
 
-
     runReturn run() override {
         auto result = AbstractCommand::run();
 
@@ -204,7 +203,7 @@ public:
                 break;
             case 'W':
                 snprintf(W, sizeof(W), "%.*s", pos, paramString);
-            break;
+                break;
 
             default:
                 break;
@@ -215,8 +214,8 @@ public:
 private:
     int32_t S = -1;
     int32_t A = -1;
-    char C[15] = {};
-    char W[21] = {};
+    char C[16] = {};
+    char W[51] = {};
     ULONG sector[LX_NOR_SECTOR_SIZE] = {};
     uint8_t *sectorBytewise = reinterpret_cast<uint8_t *>(sector);
 };
