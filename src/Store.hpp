@@ -6,6 +6,10 @@
 #ifndef LIBSMART_STM32LEVELX_STORE_HPP
 #define LIBSMART_STM32LEVELX_STORE_HPP
 
+#include <main.h>
+#include <libsmart_config.hpp>
+#include "LevelXNorFlash.hpp"
+
 namespace Stm32LevelX {
     template<class STORED_OBJECT>
     class Store : Stm32ItmLogger::Loggable {
