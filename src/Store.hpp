@@ -34,7 +34,11 @@ namespace Stm32LevelX {
             log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
                     ->printf("Stm32LevelX::Store::read()\r\n");
 
-            open();
+            if (!open()) {
+                log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
+                        ->printf("Stm32LevelX::Store::open() failed\r\n");
+                return false;
+            }
 
             for (uint32_t i = 0; i < SECTORS; i++) {
                 uint8_t *addr = reinterpret_cast<uint8_t *>(rawData) + i * SECTOR_SIZE;
@@ -117,8 +121,9 @@ namespace Stm32LevelX {
         uint32_t SECTOR_SIZE = LevelXNorFlash::getSectorSize();
         uint32_t SECTORS = (sizeof(STORED_OBJECT) + SECTOR_SIZE - 1) / SECTOR_SIZE;
         ULONG rawData[(LevelXNorFlash::getSectorSize() / sizeof(ULONG))
-            * ((sizeof(STORED_OBJECT) + LevelXNorFlash::getSectorSize() - 1) / LevelXNorFlash::getSectorSize())
-            ] = {};
+                      * ((sizeof(STORED_OBJECT) + LevelXNorFlash::getSectorSize() - 1) /
+                         LevelXNorFlash::getSectorSize())
+        ] = {};
         STORED_OBJECT *data = nullptr;
         uint32_t logicalSector;
     };
