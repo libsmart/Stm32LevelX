@@ -31,6 +31,8 @@ namespace Stm32LevelX {
         virtual UINT initialize() =0;
 
         virtual UINT reset() = 0;
+
+        virtual UINT chipErase() = 0;
     };
 }
 #endif

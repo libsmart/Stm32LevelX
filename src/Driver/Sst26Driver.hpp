@@ -127,14 +127,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The result of the transmit operation.
          */
-        HalStatus NOP() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::NOP()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::NOP);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus NOP();
 
 
         /**
@@ -142,14 +135,7 @@ namespace Stm32LevelX::Driver {
          *
          * @returns The return value of the spi->transmit() method, which is the result of the RSTEN command.
          */
-        HalStatus RSTEN() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::RSTEN()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::RSTEN);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus RSTEN();
 
 
         /**
@@ -157,14 +143,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The status of the operation.
          */
-        HalStatus RST() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::RST()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::RST);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus RST();
 
 
         /**
@@ -179,15 +158,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The HAL status indicating the success or failure of the operation.
          */
-        HalStatus RDSR(uint8_t &statusRegister) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::RDSR()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::RDSR);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->receive(&statusRegister, 1);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus RDSR(uint8_t &statusRegister);
 
 
         /**
@@ -197,11 +168,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The value of the status register.
          */
-        [[nodiscard]] uint8_t RDSR() {
-            uint8_t statusRegister;
-            RDSR(statusRegister);
-            return statusRegister;
-        }
+        [[nodiscard]] uint8_t RDSR();
 
         [[nodiscard]] bool isBUSY() { return (RDSR() & 1 << 0) > 0; }
         [[nodiscard]] bool isWEL() { return (RDSR() & 1 << 1) > 0; }
@@ -225,14 +192,7 @@ namespace Stm32LevelX::Driver {
          *         - HAL_OK: The write operation finished successfully.
          *         - HAL_TIMEOUT: The timeout period was exceeded before the write operation finished.
          */
-        HalStatus waitForWriteFinish(const uint32_t timeout_ms) {
-            const uint32_t start_ms = millis();
-            while (isBUSY()) {
-                delay(1);
-                if ((timeout_ms > 0) && (millis() - start_ms > timeout_ms)) return HalStatus::HAL_TIMEOUT;
-            }
-            return HalStatus::HAL_OK;
-        }
+        HalStatus waitForWriteFinish(const uint32_t timeout_ms);
 
 
         /**
@@ -240,9 +200,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The HAL status indicating the result of the write operation.
          */
-        HalStatus waitForWriteFinish() {
-            return waitForWriteFinish(0);
-        }
+        HalStatus waitForWriteFinish();
 
 
         /**
@@ -257,17 +215,7 @@ namespace Stm32LevelX::Driver {
          *         - HalStatus::HAL_OK: Operation successful.
          *         - Other HalStatus values: Operation unsuccessful, refer to the HalStatus documentation for detailed error codes.
          */
-        HalStatus WRSR(const uint8_t statusRegister, const uint8_t configurationRegister) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::WRSR(0x%02x, 0x%02x)\r\n",
-                             statusRegister, configurationRegister);
-            spi->select();
-            auto ret = spi->transmit(Instruction::WRSR);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(statusRegister);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(configurationRegister);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus WRSR(const uint8_t statusRegister, const uint8_t configurationRegister);
 
 
         /**
@@ -280,15 +228,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The status of the operation. Returns HalStatus::HAL_OK if successful, else an error status.
          */
-        HalStatus RDCR(uint8_t &configurationRegister) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::RDCR()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::RDCR);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->receive(&configurationRegister, 1);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus RDCR(uint8_t &configurationRegister);
 
 
         /**
@@ -298,11 +238,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The value of the Configuration Register.
          */
-        [[nodiscard]] uint8_t RDCR() {
-            uint8_t configurationRegister;
-            RDCR(configurationRegister);
-            return configurationRegister;
-        }
+        [[nodiscard]] uint8_t RDCR();
 
         [[nodiscard]] bool isIOC() { return (RDCR() & 1 << 1) > 0; }
         [[nodiscard]] bool isBPNV() { return (RDCR() & 1 << 3) > 0; }
@@ -322,17 +258,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The status of the operation (HalStatus::HAL_OK if successful, an error code otherwise).
          */
-        HalStatus READ(const uint32_t addr, uint8_t *pData, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::READ(0x%08x, %p, %lu)\r\n",
-                             addr, &pData, size);
-            spi->select();
-            // memset(pData, 0, size);
-            auto ret = spi->transmit_be((Instruction::READ << 24) | (addr & 0x00FFFFFF));
-            ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus READ(const uint32_t addr, uint8_t *pData, const uint16_t size);
 
 
         /**
@@ -351,18 +277,7 @@ namespace Stm32LevelX::Driver {
          *         - HalStatus::HAL_OK: If the read operation is successful.
          *         - Other values: If the read operation fails.
          */
-        HalStatus READ_HS(const uint32_t addr, uint8_t *pData, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::READ_HS(0x%08x, %p, %lu)\r\n",
-                             addr, &pData, size);
-            spi->select();
-            // memset(pData, 0, size);
-            auto ret = spi->transmit(Instruction::READ_HS);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr << 8 | 0xFF);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus READ_HS(const uint32_t addr, uint8_t *pData, const uint16_t size);
 
 
         /**
@@ -390,14 +305,7 @@ namespace Stm32LevelX::Driver {
          *         - `HalStatus::HAL_OK` if the write enable operation was successful
          *         - `HalStatus::HAL_ERROR` if the write enable operation failed
          */
-        HalStatus WREN() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::WREN()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::WREN);
-            spi->unselect();
-            return isWEL() ? HalStatus::HAL_OK : HalStatus::HAL_ERROR;
-        }
+        HalStatus WREN();
 
 
         /**
@@ -407,14 +315,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return HalStatus::HAL_OK if the Write Enable Latch (WEL) bit is successfully cleared, HalStatus::HAL_ERROR otherwise.
          */
-        HalStatus WRDI() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::WRDI()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::WRDI);
-            spi->unselect();
-            return !isWEL() ? HalStatus::HAL_OK : HalStatus::HAL_ERROR;
-        }
+        HalStatus WRDI();
 
 
         /**
@@ -433,18 +334,7 @@ namespace Stm32LevelX::Driver {
          * @note Wait until device is ready after this command. Tse = 25ms
          * @see Sst26Driver::waitForWriteFinish()
          */
-        HalStatus SE(const uint32_t addr) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::SE(0x%08x)\r\n",
-                             addr);
-
-            if (!isWEL()) return HalStatus::HAL_ERROR;
-            if (addr % SECTOR_SIZE > 0) return HalStatus::HAL_ERROR;
-            spi->select();
-            const auto ret = spi->transmit_be((Instruction::SE << 24) | (addr & 0x00FFFFFF));
-            spi->unselect();
-            return ret;
-        }
+        HalStatus SE(const uint32_t addr);
 
 
         /**
@@ -461,17 +351,7 @@ namespace Stm32LevelX::Driver {
          * @note Wait until device is ready after this command. Tsce = 50ms
          * @see Sst26Driver::waitForWriteFinish()
          */
-        HalStatus CE() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::CE()\r\n");
-
-            if (!isWEL()) return HalStatus::HAL_ERROR;
-            spi->select();
-            // Send the Erase Full Array command
-            const auto ret = spi->transmit(Instruction::CE);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus CE();
 
 
         /**
@@ -490,40 +370,7 @@ namespace Stm32LevelX::Driver {
          * @note Wait until device is ready after this command. Tpp = 1.5ms
          * @see Sst26Driver::waitForWriteFinish()
          */
-        HalStatus PP(const uint32_t addr, uint8_t *in, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::PP(0x%08x, %p, %lu)\r\n",
-                             addr, &in, size);
-            if (!isWEL()) return HalStatus::HAL_ERROR;
-            if (size > PAGE_SIZE) return HalStatus::HAL_ERROR;
-            if (size <= 0) return HalStatus::HAL_ERROR;
-            const auto sz = std::min(size, static_cast<uint16_t>(PAGE_SIZE - (addr & 0x000000FF)));
-            spi->select();
-            auto ret = spi->transmit_be(Instruction::PP << 24 | addr & 0x00FFFFFF);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(in, sz);
-            spi->unselect();
-            if (ret != HalStatus::HAL_OK) return ret;
-
-
-            // Check written bytes
-#ifdef LIBSMART_STM32LEVELX_PP_READ_BACK_TEST
-
-            waitForWriteFinish(3);
-            constexpr uint16_t BUFFER_SIZE = 32;
-            uint8_t buffer[BUFFER_SIZE] = {};
-            const uint16_t SLICES = (size + BUFFER_SIZE - 1) / BUFFER_SIZE;
-
-            for (uint16_t iSlice = 0; iSlice < SLICES; iSlice++) {
-                const uint16_t sz = std::min(static_cast<uint16_t>(size - iSlice * BUFFER_SIZE), BUFFER_SIZE);
-                const HalStatus ret = READ(addr + iSlice * BUFFER_SIZE, buffer, sz);
-                if (ret != HalStatus::HAL_OK) return ret;
-                if (std::memcmp(buffer, &in[iSlice * BUFFER_SIZE], sz) != 0) return HalStatus::HAL_ERROR;
-            }
-
-#endif
-
-            return ret;
-        }
+        HalStatus PP(const uint32_t addr, uint8_t *in, const uint16_t size);
 
 
         /**
@@ -533,17 +380,7 @@ namespace Stm32LevelX::Driver {
          * @param size Size of the buffer.
          * @return A `HalStatus` value representing the status of the operation.
          */
-        HalStatus RDID(uint8_t *pData, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::RDID()\r\n");
-            if (size < 3) return HalStatus::HAL_ERROR;
-            spi->select();
-            // memset(pData, 0, size);
-            auto ret = spi->transmit(Instruction::RDID);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, 3);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus RDID(uint8_t *pData, const uint16_t size);
 
 
         /**
@@ -557,18 +394,7 @@ namespace Stm32LevelX::Driver {
          * @param size The number of bytes to read.
          * @return A `HalStatus` value representing the status of the operation.
          */
-        HalStatus SFDP(const uint32_t addr, uint8_t *pData, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::SFDP(0x%08x, %p, %lu)\r\n",
-                             addr, &pData, size);
-            spi->select();
-            // memset(pData, 0, size);
-            auto ret = spi->transmit(Instruction::SFDP);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr << 8 | 0xff);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus SFDP(const uint32_t addr, uint8_t *pData, const uint16_t size);
 
 
         /**
@@ -582,9 +408,7 @@ namespace Stm32LevelX::Driver {
          * @param size The number of bytes to read.
          * @return A `HalStatus` value representing the status of the operation.
          */
-        HalStatus SFDP(const enum SFDP addr, uint8_t *pData, const uint16_t size) {
-            return SFDP(static_cast<uint32_t>(addr), pData, size);
-        }
+        HalStatus SFDP(const enum SFDP addr, uint8_t *pData, const uint16_t size);
 
         /**
          * @brief Sends the SFDP (Serial Flash Discoverable Parameters) instruction to the device.
@@ -596,11 +420,7 @@ namespace Stm32LevelX::Driver {
          * @return The data read from the memory at the specified address.
          * @note This method reads a single byte of data from the memory.
          */
-        [[nodiscard]] uint8_t SFDP(const uint32_t addr) {
-            uint8_t data = 0;
-            SFDP(addr, &data, 1);
-            return data;
-        }
+        [[nodiscard]] uint8_t SFDP(const uint32_t addr);
 
 
         /**
@@ -611,9 +431,7 @@ namespace Stm32LevelX::Driver {
          * @param addr The address of the SFDP register to be read.
          * @return The value of the SFDP register.
          */
-        [[nodiscard]] uint8_t SFDP(const enum SFDP addr) {
-            return SFDP(static_cast<uint32_t>(addr));
-        }
+        [[nodiscard]] uint8_t SFDP(const enum SFDP addr);
 
 
         /**
@@ -624,15 +442,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The current Block Protection Register (BPR) value.
          */
-        HalStatus RBPR(uint8_t *out, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::RBPR()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::RBPR);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->receive(out, size);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus RBPR(uint8_t *out, const uint16_t size);
 
 
         /**
@@ -643,14 +453,7 @@ namespace Stm32LevelX::Driver {
          * @return The return value is of type Stm32Common::HalStatus, indicating the status of the ULBPR operation.
          * @see WREN()
          */
-        HalStatus ULBPR() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::ULBPR()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::ULBPR);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus ULBPR();
 
 
         /**
@@ -661,19 +464,7 @@ namespace Stm32LevelX::Driver {
          * @param size The number of bytes to read.
          * @return A `HalStatus` value representing the status of the operation.
          */
-        HalStatus RSID(uint16_t addr, uint8_t *pData, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::RSID(0x%08x, %p, %lu)\r\n",
-                             addr, &pData, size);
-            spi->select();
-            // memset(pData, 0, size);
-            auto ret = spi->transmit(Instruction::RSID);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(0xff);
-            ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus RSID(uint16_t addr, uint8_t *pData, const uint16_t size);
 
 
         /**
@@ -681,14 +472,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The status of the DPD transmission: `HalStatus`
          */
-        HalStatus DPD() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::DPD()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::DPD);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus DPD();
 
 
         /**
@@ -696,14 +480,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The HalStatus indicating the success or failure of the RDPD operation.
          */
-        HalStatus RDPD() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::RDPD()\r\n");
-            spi->select();
-            auto ret = spi->transmit(Instruction::RDPD);
-            spi->unselect();
-            return ret;
-        }
+        HalStatus RDPD();
 
 
         /**
@@ -714,15 +491,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return True if the communication with the flash device is OK, false otherwise.
          */
-        bool isComOk() {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::isComOk()\r\n");
-            uint8_t jedecId[3] = {};
-            RDID(jedecId, sizeof(jedecId));
-            return (jedecId[0] == JEDECID::BYTE_0)
-                   && (jedecId[1] == JEDECID::BYTE_1)
-                   && (jedecId[2] == JEDECID::BYTE_2);
-        }
+        bool isComOk();
 
 
         /**
@@ -737,14 +506,7 @@ namespace Stm32LevelX::Driver {
          *         - HalStatus::HAL_OK if the communication becomes ok within the timeout period.
          *         - HalStatus::HAL_TIMEOUT if the communication does not become ok within the timeout period.
          */
-        HalStatus waitForComOk(const uint32_t timeout_ms) {
-            const uint32_t start_ms = millis();
-            while (!isComOk()) {
-                delay(1);
-                if ((timeout_ms > 0) && (millis() - start_ms > timeout_ms)) return HalStatus::HAL_TIMEOUT;
-            }
-            return HalStatus::HAL_OK;
-        }
+        HalStatus waitForComOk(const uint32_t timeout_ms);
 
 
         /**
@@ -755,9 +517,7 @@ namespace Stm32LevelX::Driver {
          *
          * @return The status of the communication acknowledgement.
          */
-        HalStatus waitForComOk() {
-            return waitForComOk(0);
-        }
+        HalStatus waitForComOk();
 
 
         /**
@@ -770,16 +530,7 @@ namespace Stm32LevelX::Driver {
          * @param size The size of the buffer.
          * @return A `HalStatus` value representing the status of the operation:
          */
-        HalStatus getEUI48(uint8_t *pData, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::getEUI48()\r\n");
-            if (size < 6) return HalStatus::HAL_ERROR;
-            // memset(pData, 0, size);
-            if (SFDP(SFDP::EUI48_PROGRAMMED) == 0x30) {
-                return SFDP(0x261, pData, 6);
-            }
-            return HalStatus::HAL_ERROR;
-        }
+        HalStatus getEUI48(uint8_t *pData, const uint16_t size);
 
 
         /**
@@ -792,16 +543,7 @@ namespace Stm32LevelX::Driver {
          * @param size The size of the buffer. This should be at least 8.
          * @return A `HalStatus` value representing the status of the operation:
          */
-        HalStatus getEUI64(uint8_t *pData, const uint16_t size) {
-            log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    ->printf("Stm32LevelX::Driver::Sst26Driver::getEUI64()\r\n");
-            if (size < 8) return HalStatus::HAL_ERROR;
-            // memset(pData, 0, size);
-            if (SFDP(SFDP::EUI64_PROGRAMMED) == 0x40) {
-                return SFDP(0x268, pData, 8);
-            }
-            return HalStatus::HAL_ERROR;
-        }
+        HalStatus getEUI64(uint8_t *pData, const uint16_t size);
 
     public:
         /**
@@ -890,6 +632,20 @@ namespace Stm32LevelX::Driver {
          * @return The return value of this method is of type UINT.
          */
         UINT reset() override;
+
+
+        /**
+         * @brief Erases the entire chip by issuing a chip erase command.
+         *
+         * This method performs a series of operations to erase all the data
+         * on the flash memory chip. It enables writing, sends the chip erase
+         * command, waits for the erase operation to complete, and disables writing.
+         * Ensures all operations are executed successfully before returning.
+         *
+         * @return LX_SUCCESS if the chip erase operation completes successfully,
+         *         or LX_ERROR if any step in the process fails.
+         */
+        UINT chipErase() override;
 
     protected:
         Stm32Spi::Spi *spi;
