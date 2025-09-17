@@ -36,3 +36,7 @@ UINT Stm32LevelX::Driver::DummyDriver::initialize() {
 UINT Stm32LevelX::Driver::DummyDriver::reset() {
     return LX_SUCCESS;
 }
+
+UINT Stm32LevelX::Driver::DummyDriver::chipErase() {
+    return LX_SUCCESS;
+}

@@ -34,5 +34,7 @@ namespace Stm32LevelX::Driver {
         UINT initialize() override;
 
         UINT reset() override;
+
+        UINT chipErase() override;
     };
 }
