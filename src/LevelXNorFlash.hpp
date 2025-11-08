@@ -13,10 +13,12 @@
 #include <Driver/Sst26Driver.hpp>
 
 #include "Loggable.hpp"
-#include "lx_api.h"
 #include "Nameable.hpp"
 
-// #define LX_NOR_SECTOR_SIZE 4096
+extern "C" {
+#include "lx_api.h"
+}
+
 
 namespace Stm32LevelX {
     static ULONG nor_sector_memory[LX_NOR_SECTOR_SIZE];
@@ -65,10 +67,19 @@ namespace Stm32LevelX {
 
         LevelXErrorCode sectorWrite(ULONG logical_sector, VOID *buffer);
 
+        /**
+         * @brief Retrieves the size of a single physical sector in bytes.
+         *
+         * This method calculates the sector size by multiplying the constant
+         * LX_NOR_SECTOR_SIZE (in terms of ULONG structure count) by the size
+         * of ULONG. It provides the total sector size in bytes.
+         *
+         * @return The size of a sector in bytes as a 32-bit unsigned integer.
+         */
         static constexpr uint32_t getSectorSize() { return LX_NOR_SECTOR_SIZE * sizeof(ULONG); }
 
         [[nodiscard]] bool isInitialized() const { return LX_initialized; }
-        [[nodiscard]] bool isOpen() const { return LX_open; }
+        [[nodiscard]] bool isOpen() const { return lx_nor_flash_state == LX_NOR_FLASH_OPENED; }
 
         static const char *getErrorCodeString(const LevelXErrorCode errorCode) {
             switch (errorCode) {
@@ -113,19 +124,27 @@ namespace Stm32LevelX {
 
             self->driver->initialize();
 
-            ULONG block_size = self->driver->getSectorSize();
-            ULONG total_blocks = 512;
+            const ULONG block_size = self->driver->getSectorSize();
+            const ULONG block_count = self->driver->getTotalSectors();
 
-            /* Setup the base address of the flash memory.  */
+            // Setup the base address of the flash memory
+            // Used if flash is mapped into memory
             // nor_flash->lx_nor_flash_base_address = nullptr;
 
-            /* Setup geometry of the flash.  */
-            nor_flash->lx_nor_flash_total_blocks = total_blocks;
-            nor_flash->lx_nor_flash_words_per_block = block_size / sizeof(ULONG);
+            // constexpr ULONG totalFlashSizeInMBit = 16;
+            // constexpr ULONG totalFlashSize = (totalFlashSizeInMBit * 1024 * 1024) / 8;
 
+            // Setup geometry of the flash
+            nor_flash->lx_nor_flash_total_blocks = block_count;
+            nor_flash->lx_nor_flash_words_per_block = block_size / sizeof(ULONG);
+            // nor_flash->lx_nor_flash_physical_sectors_per_block = block_size / LX_NOR_SECTOR_SIZE;
+            // nor_flash->lx_nor_flash_total_physical_sectors  = totalFlashSize / LX_NOR_SECTOR_SIZE;
+
+            // Connect the driver's read and write functions
             nor_flash->lx_nor_flash_driver_read = nor_driver_read;
             nor_flash->lx_nor_flash_driver_write = nor_driver_write;
 
+            // Connect the driver's block_erase and block_erased_verify functions
             nor_flash->lx_nor_flash_driver_block_erase = nor_driver_block_erase;
             nor_flash->lx_nor_flash_driver_block_erased_verify = nor_driver_block_erased_verify;
 
@@ -139,8 +158,8 @@ namespace Stm32LevelX {
 
         static UINT nor_driver_read(ULONG *flash_address, ULONG *destination, ULONG words) {
             // self->log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    // ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_read(0x%08x, 0x%08x, %d)\r\n",
-                             // flash_address, &destination, words);
+            // ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_read(0x%08x, 0x%08x, %d)\r\n",
+            // flash_address, &destination, words);
 
             return self->driver->read(
                 reinterpret_cast<uint32_t>(flash_address),
@@ -151,8 +170,8 @@ namespace Stm32LevelX {
 
         static UINT nor_driver_write(ULONG *flash_address, ULONG *source, ULONG words) {
             // self->log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::INFORMATIONAL)
-                    // ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_write(0x%08x, 0x%08x, %d)\r\n",
-                             // flash_address, &source, words);
+            // ->printf("Stm32LevelX::LevelXNorFlash::nor_driver_write(0x%08x, 0x%08x, %d)\r\n",
+            // flash_address, &source, words);
 
             return self->driver->write(
                 reinterpret_cast<uint32_t>(flash_address),
@@ -192,7 +211,7 @@ namespace Stm32LevelX {
         AbstractNorDriver *driver;
         static LevelXNorFlash *self;
         bool LX_initialized = false;
-        bool LX_open = false;
+        // bool LX_open = false;
     };
 
     inline LevelXNorFlash *LevelXNorFlash::self = {};

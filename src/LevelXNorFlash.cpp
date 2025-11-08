@@ -12,7 +12,6 @@ LevelXErrorCode LevelXNorFlash::initialize() {
             ->println("Stm32LevelX::LevelXNorFlash::initialize()");
 
     LX_initialized = false;
-    LX_open = false;
 
     // @see https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/levelx/chapter6.md#lx_nor_flash_initialize
     auto ret = lx_nor_flash_initialize();
@@ -43,7 +42,6 @@ LevelXErrorCode LevelXNorFlash::open() {
                 ->printf("lx_nor_flash_open() = 0x%02x\r\n", ret);
         return static_cast<LevelXErrorCode>(ret);
     }
-    LX_open = true;
     return static_cast<LevelXErrorCode>(ret);
 }
 
@@ -64,7 +62,6 @@ LevelXErrorCode LevelXNorFlash::close() {
                 ->printf("lx_nor_flash_close() = 0x%02x\r\n", ret);
         return static_cast<LevelXErrorCode>(ret);
     }
-    LX_open = false;
     return static_cast<LevelXErrorCode>(ret);
 }
 
@@ -85,7 +82,6 @@ LevelXErrorCode LevelXNorFlash::defragment() {
                 ->printf("lx_nor_flash_defragment() = 0x%02x\r\n", ret);
         return static_cast<LevelXErrorCode>(ret);
     }
-    LX_open = false;
     return static_cast<LevelXErrorCode>(ret);
 }
 
@@ -106,7 +102,6 @@ LevelXErrorCode LevelXNorFlash::partialDefragment(const UINT max_blocks) {
                 ->printf("lx_nor_flash_partial_defragment() = 0x%02x\r\n", ret);
         return static_cast<LevelXErrorCode>(ret);
     }
-    LX_open = false;
     return static_cast<LevelXErrorCode>(ret);
 }
 
