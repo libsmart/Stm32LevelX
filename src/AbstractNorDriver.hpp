@@ -8,7 +8,10 @@
 
 #include <libsmart_config.hpp>
 #include <main.h>
+
+extern "C" {
 #include "lx_api.h"
+}
 
 
 namespace Stm32LevelX {

@@ -12,7 +12,11 @@
 #include "AbstractNorDriver.hpp"
 #include "Stm32ItmLogger.hpp"
 #include "Loggable.hpp"
+
+extern "C" {
 #include "lx_api.h"
+}
+
 
 namespace Stm32LevelX {
     class LevelX : public Stm32ItmLogger::Loggable {

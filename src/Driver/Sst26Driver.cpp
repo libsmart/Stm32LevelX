@@ -15,7 +15,7 @@ HalStatus Sst26Driver::NOP() {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::NOP()\r\n");
     spi->select();
-    auto ret = spi->transmit(Instruction::NOP);
+    const auto ret = spi->transmit(Instruction::NOP);
     spi->unselect();
     return ret;
 }
@@ -24,7 +24,7 @@ HalStatus Sst26Driver::RSTEN() {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::RSTEN()\r\n");
     spi->select();
-    auto ret = spi->transmit(Instruction::RSTEN);
+    const auto ret = spi->transmit(Instruction::RSTEN);
     spi->unselect();
     return ret;
 }
@@ -33,7 +33,7 @@ HalStatus Sst26Driver::RST() {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::RST()\r\n");
     spi->select();
-    auto ret = spi->transmit(Instruction::RST);
+    const auto ret = spi->transmit(Instruction::RST);
     spi->unselect();
     return ret;
 }
@@ -64,7 +64,7 @@ HalStatus Sst26Driver::waitForWriteFinish(const uint32_t timeout_ms) {
 }
 
 HalStatus Sst26Driver::waitForWriteFinish() {
-    return waitForWriteFinish(0);
+    return waitForWriteFinish(DEFAULT_TIMEOUT);
 }
 
 HalStatus Sst26Driver::WRSR(const uint8_t statusRegister, const uint8_t configurationRegister) {
@@ -100,7 +100,6 @@ HalStatus Sst26Driver::READ(const uint32_t addr, uint8_t *pData, const uint16_t 
             ->printf("Stm32LevelX::Driver::Sst26Driver::READ(0x%08x, %p, %lu)\r\n",
                      addr, &pData, size);
     spi->select();
-    // memset(pData, 0, size);
     auto ret = spi->transmit_be((Instruction::READ << 24) | (addr & 0x00FFFFFF));
     ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
     spi->unselect();
@@ -112,7 +111,6 @@ HalStatus Sst26Driver::READ_HS(const uint32_t addr, uint8_t *pData, const uint16
             ->printf("Stm32LevelX::Driver::Sst26Driver::READ_HS(0x%08x, %p, %lu)\r\n",
                      addr, &pData, size);
     spi->select();
-    // memset(pData, 0, size);
     auto ret = spi->transmit(Instruction::READ_HS);
     ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr << 8 | 0xFF);
     ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
@@ -125,6 +123,7 @@ HalStatus Sst26Driver::WREN() {
             ->printf("Stm32LevelX::Driver::Sst26Driver::WREN()\r\n");
     spi->select();
     auto ret = spi->transmit(Instruction::WREN);
+    LIBSMART_UNUSED(ret);
     spi->unselect();
     return isWEL() ? HalStatus::HAL_OK : HalStatus::HAL_ERROR;
 }
@@ -134,6 +133,7 @@ HalStatus Sst26Driver::WRDI() {
             ->printf("Stm32LevelX::Driver::Sst26Driver::WRDI()\r\n");
     spi->select();
     auto ret = spi->transmit(Instruction::WRDI);
+    LIBSMART_UNUSED(ret);
     spi->unselect();
     return !isWEL() ? HalStatus::HAL_OK : HalStatus::HAL_ERROR;
 }
@@ -181,7 +181,7 @@ HalStatus Sst26Driver::PP(const uint32_t addr, uint8_t *in, const uint16_t size)
     // Check written bytes
 #ifdef LIBSMART_STM32LEVELX_PP_READ_BACK_TEST
 
-    waitForWriteFinish(3);
+    if (waitForWriteFinish() != HalStatus::HAL_OK) return HalStatus::HAL_TIMEOUT;
     constexpr uint16_t BUFFER_SIZE = 32;
     uint8_t buffer[BUFFER_SIZE] = {};
     const uint16_t SLICES = (size + BUFFER_SIZE - 1) / BUFFER_SIZE;
@@ -203,7 +203,6 @@ HalStatus Sst26Driver::RDID(uint8_t *pData, const uint16_t size) {
             ->printf("Stm32LevelX::Driver::Sst26Driver::RDID()\r\n");
     if (size < 3) return HalStatus::HAL_ERROR;
     spi->select();
-    // memset(pData, 0, size);
     auto ret = spi->transmit(Instruction::RDID);
     ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, 3);
     spi->unselect();
@@ -215,7 +214,6 @@ HalStatus Sst26Driver::SFDP(const uint32_t addr, uint8_t *pData, const uint16_t 
             ->printf("Stm32LevelX::Driver::Sst26Driver::SFDP(0x%08x, %p, %lu)\r\n",
                      addr, &pData, size);
     spi->select();
-    // memset(pData, 0, size);
     auto ret = spi->transmit(Instruction::SFDP);
     ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr << 8 | 0xff);
     ret = ret != HalStatus::HAL_OK ? ret : spi->receive(pData, size);
@@ -247,7 +245,7 @@ HalStatus Sst26Driver::ULBPR() {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::ULBPR()\r\n");
     spi->select();
-    auto ret = spi->transmit(Instruction::ULBPR);
+    const auto ret = spi->transmit(Instruction::ULBPR);
     spi->unselect();
     return ret;
 }
@@ -257,7 +255,6 @@ HalStatus Sst26Driver::RSID(uint16_t addr, uint8_t *pData, const uint16_t size) 
             ->printf("Stm32LevelX::Driver::Sst26Driver::RSID(0x%08x, %p, %lu)\r\n",
                      addr, &pData, size);
     spi->select();
-    // memset(pData, 0, size);
     auto ret = spi->transmit(Instruction::RSID);
     ret = ret != HalStatus::HAL_OK ? ret : spi->transmit_be(addr);
     ret = ret != HalStatus::HAL_OK ? ret : spi->transmit(0xff);
@@ -270,7 +267,7 @@ HalStatus Sst26Driver::DPD() {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::DPD()\r\n");
     spi->select();
-    auto ret = spi->transmit(Instruction::DPD);
+    const auto ret = spi->transmit(Instruction::DPD);
     spi->unselect();
     return ret;
 }
@@ -279,7 +276,7 @@ HalStatus Sst26Driver::RDPD() {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::RDPD()\r\n");
     spi->select();
-    auto ret = spi->transmit(Instruction::RDPD);
+    const auto ret = spi->transmit(Instruction::RDPD);
     spi->unselect();
     return ret;
 }
@@ -305,14 +302,13 @@ HalStatus Sst26Driver::waitForComOk(const uint32_t timeout_ms) {
 }
 
 HalStatus Sst26Driver::waitForComOk() {
-    return waitForComOk(0);
+    return waitForComOk(DEFAULT_TIMEOUT);
 }
 
 HalStatus Sst26Driver::getEUI48(uint8_t *pData, const uint16_t size) {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::getEUI48()\r\n");
     if (size < 6) return HalStatus::HAL_ERROR;
-    // memset(pData, 0, size);
     if (SFDP(SFDP::EUI48_PROGRAMMED) == 0x30) {
         return SFDP(0x261, pData, 6);
     }
@@ -323,7 +319,6 @@ HalStatus Sst26Driver::getEUI64(uint8_t *pData, const uint16_t size) {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::getEUI64()\r\n");
     if (size < 8) return HalStatus::HAL_ERROR;
-    // memset(pData, 0, size);
     if (SFDP(SFDP::EUI64_PROGRAMMED) == 0x40) {
         return SFDP(0x268, pData, 8);
     }
@@ -334,7 +329,10 @@ ULONG Sst26Driver::getTotalSectors() {
     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::DEBUGGING)
             ->printf("Stm32LevelX::Driver::Sst26Driver::getTotalBlocks()\r\n");
 
-    return 512;
+    constexpr ULONG totalFlashSizeInMBit = 16;
+    constexpr ULONG totalFlashSize = (totalFlashSizeInMBit * 1024 * 1024) / 8;
+
+    return totalFlashSize / getSectorSize();
 }
 
 ULONG Sst26Driver::getSectorSize() {
@@ -365,7 +363,7 @@ UINT Sst26Driver::write(const uint32_t addr, uint8_t *in, const uint16_t size) {
         if (ret != HalStatus::HAL_OK) return LX_ERROR;
         ret = PP(addr + i * PAGE_SIZE, &in[i * PAGE_SIZE], sz);
         if (ret != HalStatus::HAL_OK) return LX_ERROR;
-        ret = waitForWriteFinish(10);
+        ret = waitForWriteFinish();
         if (ret != HalStatus::HAL_OK) return LX_ERROR;
     }
     WRDI();
@@ -394,7 +392,8 @@ UINT Sst26Driver::eraseSector(const uint32_t addr, ULONG erase_count) {
 
     if (addr % SECTOR_SIZE > 0) return LX_ERROR;
     WREN();
-    const HalStatus ret = SE(addr);
+    HalStatus ret = SE(addr);
+    ret = ret != HalStatus::HAL_OK ? ret : waitForWriteFinish();
     WRDI();
     return ret == HalStatus::HAL_OK ? LX_SUCCESS : LX_ERROR;
 }
@@ -405,7 +404,7 @@ UINT Sst26Driver::verifySectorErased(const uint32_t addr) {
                      addr);
 
     if (addr % SECTOR_SIZE > 0) return LX_ERROR;
-    constexpr uint16_t BUFFER_SIZE = 32;
+    constexpr uint16_t BUFFER_SIZE = PAGE_SIZE;
     constexpr uint16_t SLICES = (SECTOR_SIZE + BUFFER_SIZE - 1) / BUFFER_SIZE;
     uint8_t buffer[BUFFER_SIZE];
     std::memset(buffer, 0xFF, BUFFER_SIZE);
@@ -427,7 +426,7 @@ UINT Sst26Driver::initialize() {
             ->printf("Stm32LevelX::Driver::Sst26Driver::initialize()\r\n");
 
     reset();
-    if (waitForComOk(40) != HalStatus::HAL_OK) return LX_ERROR;
+    if (waitForComOk(std::max(40UL, DEFAULT_TIMEOUT)) != HalStatus::HAL_OK) return LX_ERROR;
     WREN();
     ULBPR();
     WRDI();
@@ -445,7 +444,8 @@ UINT Sst26Driver::reset() {
 UINT Sst26Driver::chipErase() {
     auto ret = WREN();
     ret = ret != HalStatus::HAL_OK ? ret : CE();
-    ret = ret != HalStatus::HAL_OK ? ret : waitForWriteFinish(100);
+    // Wait at least 50ms (data sheet)
+    ret = ret != HalStatus::HAL_OK ? ret : waitForWriteFinish(std::max(50UL, DEFAULT_TIMEOUT));
     ret = ret != HalStatus::HAL_OK ? ret : WRDI();
 
     return ret == HalStatus::HAL_OK ? LX_SUCCESS : LX_ERROR;

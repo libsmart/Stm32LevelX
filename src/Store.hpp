@@ -19,8 +19,8 @@ namespace Stm32LevelX {
 
         Store(LevelXNorFlash *lx, const uint32_t logicalSector, Stm32ItmLogger::LoggerInterface *logger)
             : Loggable(logger),
-              logicalSector(logicalSector),
-              LX(lx) { initializeDefault(); }
+              LX(lx),
+              logicalSector(logicalSector) { initializeDefault(); }
 
 
         void initializeDefault() {
@@ -45,11 +45,11 @@ namespace Stm32LevelX {
                 const auto ret = LX->sectorRead(logicalSector + i, addr);
                 if (ret != LevelXErrorCode::SUCCESS) {
                     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
-                            ->printf("LX->sectorRead(%d, %p) = 0x%02x\r\n", logicalSector, rawData, ret);
+                            ->printf("LX->sectorRead(%d, %p) = 0x%02x\r\n", logicalSector + i, rawData, ret);
                     return false;
                 }
                 log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::NOTICE)
-                        ->printf("LX->sectorRead(%d, %p) = 0x%02x\r\n", logicalSector, rawData, ret);
+                        ->printf("LX->sectorRead(%d, %p) = 0x%02x\r\n", logicalSector + i, rawData, ret);
             }
 
             return true;
@@ -66,11 +66,11 @@ namespace Stm32LevelX {
                 const auto ret = LX->sectorWrite(logicalSector + i, addr);
                 if (ret != LevelXErrorCode::SUCCESS) {
                     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
-                            ->printf("LX->sectorWrite(%d, %p) = 0x%02x\r\n", logicalSector, addr, ret);
+                            ->printf("LX->sectorWrite(%d, %p) = 0x%02x\r\n", logicalSector + i, addr, ret);
                     return false;
                 }
                 log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::NOTICE)
-                        ->printf("LX->sectorWrite(%d, %p) = 0x%02x\r\n", logicalSector, addr, ret);
+                        ->printf("LX->sectorWrite(%d, %p) = 0x%02x\r\n", logicalSector + i, addr, ret);
             }
 
             return true;
@@ -87,7 +87,7 @@ namespace Stm32LevelX {
                 const auto ret = LX->sectorRelease(logicalSector + i);
                 if (ret != LevelXErrorCode::SUCCESS) {
                     log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
-                            ->printf("LX->sectorRelease(%d) = 0x%02x\r\n", logicalSector, ret);
+                            ->printf("LX->sectorRelease(%d) = 0x%02x\r\n", logicalSector + i, ret);
                     return false;
                 }
             }

@@ -30,8 +30,17 @@ namespace Stm32LevelX::Driver {
               spi(spi) { ; }
 
 
+        /**
+         * @brief Defines the size of a memory page in bytes.
+         * A page is the biggest unit that can be written it once.
+         */
         static constexpr uint32_t PAGE_SIZE = 256;
-        static constexpr uint32_t SECTOR_SIZE = 4096;
+        /**
+         * @brief Size of a single flash memory sector in bytes.
+         * A sector ist the unit that must be erased at once.
+         */
+        static constexpr uint32_t SECTOR_SIZE = 4 * 1024;
+        static constexpr uint32_t DEFAULT_TIMEOUT = LIBSMART_STM32LEVELX_DEFAULT_TIMEOUT;
 
         class JEDECID {
         public:
