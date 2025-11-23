@@ -116,6 +116,13 @@ namespace Stm32LevelX {
 
         STORED_OBJECT *getStoredObject() { return data; }
 
+        STORED_OBJECT &storedObject() {
+            if (data == nullptr) {
+                initializeDefault();
+            }
+            return *data;
+        }
+
     private:
         LevelXNorFlash *LX;
         uint32_t SECTOR_SIZE = LevelXNorFlash::getSectorSize();
