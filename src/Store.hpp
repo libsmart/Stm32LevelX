@@ -10,9 +10,9 @@
 #include "Hash/MurmurHash3.hpp"
 #include "LevelXNorFlash.hpp"
 
-using namespace Stm32ItmLogger;
-
 namespace Stm32LevelX {
+    using namespace Stm32ItmLogger;
+
     template<class STORED_OBJECT>
     class Store : public Loggable {
     public:
