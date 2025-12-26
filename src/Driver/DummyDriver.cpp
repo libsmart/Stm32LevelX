@@ -14,6 +14,7 @@ ULONG Stm32LevelX::Driver::DummyDriver::getSectorSize() {
 }
 
 UINT Stm32LevelX::Driver::DummyDriver::read(uint32_t addr, uint8_t *out, uint16_t size) {
+    memset(out, 0xff, size);
     return LX_SUCCESS;
 }
 
