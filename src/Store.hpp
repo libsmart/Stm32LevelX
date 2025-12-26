@@ -156,6 +156,8 @@ namespace Stm32LevelX {
                             ->printf("LX.sectorRelease(%d) = 0x%02x\r\n", logicalSector + i, ret);
                     return false;
                 }
+                log(LoggerInterface::Severity::NOTICE)
+                        ->printf("LX.sectorRelease(%d) = 0x%02x\r\n", logicalSector + i, ret);
             }
 
             return true;

@@ -136,7 +136,7 @@ LevelXErrorCode LevelXNorFlash::sectorRelease(const ULONG logical_sector) {
 
     // @see https://github.com/eclipse-threadx/rtos-docs/blob/main/rtos-docs/levelx/chapter6.md#lx_nor_flash_sector_release
     auto ret = lx_nor_flash_sector_release(this, logical_sector);
-    if (ret != LX_SUCCESS) {
+    if (ret != LX_SUCCESS && ret != LX_SECTOR_NOT_FOUND) {
         log()->setSeverity(Stm32ItmLogger::LoggerInterface::Severity::ERROR)
                 ->printf("lx_nor_flash_sector_release() = 0x%02x\r\n", ret);
     }
