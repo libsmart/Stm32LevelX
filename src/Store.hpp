@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2025 Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
+ * SPDX-FileCopyrightText: 2026 Roland Rusch, easy-smart solution GmbH <roland.rusch@easy-smart.ch>
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -59,7 +59,7 @@ namespace Stm32LevelX {
          * @return A reference to the initialized default instance of the stored object.
          */
         STORED_OBJECT &initializeDefault() {
-            log(LoggerInterface::Severity::INFORMATIONAL)
+            log(LoggerInterface::Severity::DEBUGGING)
                     ->printf("Stm32LevelX::Store::initializeDefault()\r\n");
             std::memset(rawData, LIBSMART_STM32LEVELX_STORE_INITIALIZE_BYTE, sizeof(rawData));
             data = new(rawData) STORED_OBJECT();
@@ -82,7 +82,7 @@ namespace Stm32LevelX {
          *         - `false`: An error occurred while opening the storage or reading a sector.
          */
         bool read() const {
-            log(LoggerInterface::Severity::INFORMATIONAL)->printf("Stm32LevelX::Store::read()\r\n");
+            log(LoggerInterface::Severity::DEBUGGING)->printf("Stm32LevelX::Store::read()\r\n");
 
             if (!open()) {
                 log(LoggerInterface::Severity::ERROR)->printf("Stm32LevelX::Store::open() failed\r\n");
@@ -97,7 +97,7 @@ namespace Stm32LevelX {
                             ->printf("LX.sectorRead(%d, %p) = 0x%02x\r\n", logicalSector + i, rawData, ret);
                     return false;
                 }
-                log(LoggerInterface::Severity::NOTICE)
+                log(LoggerInterface::Severity::INFORMATIONAL)
                         ->printf("LX.sectorRead(%d, %p) = 0x%02x\r\n", logicalSector + i, rawData, ret);
             }
 
@@ -127,7 +127,7 @@ namespace Stm32LevelX {
                             ->printf("LX.sectorWrite(%d, %p) = 0x%02x\r\n", logicalSector + i, addr, ret);
                     return false;
                 }
-                log(LoggerInterface::Severity::NOTICE)
+                log(LoggerInterface::Severity::INFORMATIONAL)
                         ->printf("LX.sectorWrite(%d, %p) = 0x%02x\r\n", logicalSector + i, addr, ret);
             }
 
@@ -156,7 +156,7 @@ namespace Stm32LevelX {
                             ->printf("LX.sectorRelease(%d) = 0x%02x\r\n", logicalSector + i, ret);
                     return false;
                 }
-                log(LoggerInterface::Severity::NOTICE)
+                log(LoggerInterface::Severity::INFORMATIONAL)
                         ->printf("LX.sectorRelease(%d) = 0x%02x\r\n", logicalSector + i, ret);
             }
 
